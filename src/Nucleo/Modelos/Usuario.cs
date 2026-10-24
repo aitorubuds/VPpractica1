@@ -5,17 +5,29 @@ namespace Nucleo.Modelos;
 public class Usuario
 {
     public int Id { get; set; } = -1;
+    public int IdUsuario { get => Id; set => Id = value; }
     public string Cuenta { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
+    public string Apellidos { get; set; } = string.Empty;
     public string EMail { get; set; } = string.Empty;
     public string HashContrasena { get; set; } = string.Empty;
     public string Sal { get; set; } = string.Empty;
     public int RolId { get; set; }
     public bool Activo { get; set; } = true;
+    public bool Activa { get => Activo; set => Activo = value; }
 
     // bloqueo por intentos fallidos
     public int IntentosFallidos { get; set; } = 0;
+    public int IntentosErroneos { get => IntentosFallidos; set => IntentosFallidos = value; }
     public bool Bloqueado { get; set; } = false;
+
+    // propiedades para auditoría y perfil web
+    public bool TieneCredencialesConfiguradas => !string.IsNullOrEmpty(HashContrasena);
+    public int ListaPasswordsCount { get; set; } = 1;
+    public DateTime FechaUltimoAcceso { get; set; } = DateTime.Now;
+    public DateTime UltimoCambioPassword { get; set; } = DateTime.Now;
+    public DateTime BloquearAccesoHasta { get; set; } = default;
+    public DateTime CaducidadCuenta { get; set; } = default;
 
     // asignar la contraseña por primera vez
     public void EstablecerContrasena(string contrasena)
@@ -94,5 +106,14 @@ public class Usuario
     {
         Bloqueado = false;
         IntentosFallidos = 0;
+    }
+
+    // Alias para que funcione con la web del profesor
+    public bool CompruebaPassword(string contrasena) => ComprobarContrasena(contrasena);
+    public bool CambiaPassword(string contrasenaActual, string nuevaContrasena) => CambiarContrasena(contrasenaActual, nuevaContrasena);
+
+    public override string ToString()
+    {
+        return string.IsNullOrWhiteSpace(Apellidos) ? Nombre : $"{Nombre} {Apellidos}".Trim();
     }
 }

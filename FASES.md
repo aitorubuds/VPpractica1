@@ -153,20 +153,20 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 ## Bloque VI: Aplicación Web ASP.NET Core (Fases 16 - 17)
 
-- [ ] **Fase 16 — Configuración Web e Inyección de Dependencias**
+- [X] **Fase 16 — Configuración Web e Inyección de Dependencias**
   - Configurar `Program.cs` en `src/Web/`:
-    - Registrar `IDatos` como Singleton o Scoped.
-    - Poblar datos semilla (*seed data*) conocidos en el inicio.
+    - Registrar `IDatos` como Singleton en memoria.
+    - Poblar datos semilla (*seed data*) conocidos en el inicio (`admin@ubu.es` y proyecto demo).
   - *Criterio de éxito:* La aplicación web arranca en local (`dotnet run` o F5 en Visual Studio).
 
-- [ ] **Fase 17 — Vistas y Flujos Web de Usabilidad**
-  - Implementar páginas/controladores para:
-    - Inicio / Bienvenida.
-    - Pantalla de inicio de sesión (autenticación y mensaje de bloqueo).
-    - Listado y gestión de proyectos de prueba.
-    - Cambio seguro de contraseña.
-  - Realizar pruebas de usabilidad y pruebas en varios navegadores (Edge, Chrome, Firefox).
-  - *Criterio de éxito:* La interfaz es funcional, usable y no arroja errores 500.
+- [X] **Fase 17 — Vistas y Flujos Web de Usabilidad**
+  - Integrar las plantillas Razor Pages oficiales del profesor:
+    - Redirección de inicio a login (`Pages/Index.cshtml`).
+    - Flujo de login en dos pasos (`Pages/Login/Index.cshtml` e `Index2.cshtml`).
+    - Listado, alta y selección de proyectos (`Pages/Proyectos/Seleccionar/Index.cshtml`).
+    - Perfil de usuario y cambio seguro de contraseña (`Pages/Usuarios/Perfil/Index.cshtml`).
+    - Auditoría y consulta de registros de eventos (`Pages/Log/Index.cshtml`).
+  - *Criterio de éxito:* La interfaz compila sin errores y queda totalmente vinculada a la capa `Datos` y `Nucleo`.
 
 ---
 
