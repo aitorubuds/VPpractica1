@@ -108,7 +108,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 ## Bloque IV: Capa de Persistencia en Memoria (`Datos`) (Fases 12 - 13)
 
-- [ ] **Fase 12 — Consolidación de `Datos.cs`**
+- [X] **Fase 12 — Consolidación de `Datos.cs`**
   - Verificar la lógica de asignación autoincremental de identificadores:
     - Si `Id < 0` $\to$ asigna `++_ultimoId` e inserta.
     - Si `Id >= 0` $\to$ actualiza la entidad existente.
@@ -116,7 +116,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
   - Verificar que `Reiniciar()` vacía todas las colecciones y restablece los contadores a 0.
   - *Criterio de éxito:* `Datos.cs` listo para pruebas sin persistencia real.
 
-- [ ] **Fase 13 — Pruebas Unitarias de `Datos.cs`**
+- [X] **Fase 13 — Pruebas Unitarias de `Datos.cs`**
   - Crear `tests/Nucleo.Tests/Datos/DatosTests.cs`.
   - Incorporar método anotado con `[TestInitialize]` que invoque `_datos.Reiniciar()`.
   - Pruebas para:
@@ -127,7 +127,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - Borrado de entidades existentes y no existentes.
     - Registro de logs y limpieza de auditoría (`LimpiarLog()`).
     - Comprobación de restablecimiento total con `Reiniciar()`.
-  - *Criterio de éxito:* Todos los casos de prueba de datos pasan en verde.
+  - *Criterio de éxito:* Todos los casos de prueba de datos pasan en verde (cobertura 98.8%).
 
 ---
 
