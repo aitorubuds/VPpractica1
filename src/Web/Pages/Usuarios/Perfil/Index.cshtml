@@ -1,0 +1,221 @@
+@page
+@model www.Pages.Usuarios.Perfil.IndexModel
+
+@{
+    ViewData["Title"] = "Mi perfil";
+    ViewData["TituloCabecera"] = "Mi perfil";
+    ViewData["MostrarMenuUsuario"] = true;
+    ViewData["NombreUsuario"] = Model.NombreUsuarioCabecera;
+    ViewData["NombreProyecto"] = Model.NombreProyectoActual;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Mi perfil</h1>
+            <p class="text-body-secondary mb-0">
+                Consulte los datos de la cuenta, modifique sus datos personales
+                o cambie su contraseña.
+            </p>
+        </div>
+
+        <a asp-page="/Principal/Index"
+           class="btn btn-outline-secondary">
+            Volver
+        </a>
+    </div>
+
+    @if (TempData["MensajePerfil"] is string mensajePerfil)
+    {
+        <div class="alert alert-success" role="status">
+            @mensajePerfil
+        </div>
+    }
+
+    @if (TempData["MensajePassword"] is string mensajePassword)
+    {
+        <div class="alert alert-success" role="status">
+            @mensajePassword
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-xl-7">
+            <section class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Datos personales</h2>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" asp-page-handler="GuardarPerfil">
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="EMail"
+                                       class="form-label">
+                                </label>
+                                <input asp-for="EMail"
+                                       class="form-control"
+                                       type="email"
+                                       autocomplete="email" />
+                                <span asp-validation-for="EMail"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Nombre"
+                                       class="form-label">
+                                </label>
+                                <input asp-for="Nombre"
+                                       class="form-control"
+                                       autocomplete="given-name" />
+                                <span asp-validation-for="Nombre"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Apellidos"
+                                       class="form-label">
+                                </label>
+                                <input asp-for="Apellidos"
+                                       class="form-control"
+                                       autocomplete="family-name" />
+                                <span asp-validation-for="Apellidos"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary mt-4">
+                            Guardar cambios
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Información de la cuenta</h2>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Identificador</dt>
+                        <dd class="col-sm-7">@Model.IdUsuario</dd>
+
+                        <dt class="col-sm-5">Estado de la cuenta</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.CuentaActiva)
+                            {
+                                <span class="badge text-bg-success">Activa</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-danger">Desactivada</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-5">Contraseña configurada</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.SinPassword)
+                            {
+                                <span class="badge text-bg-warning">No</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">Sí</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-5">Rol</dt>
+                        <dd class="col-sm-7">@Model.Rol</dd>
+
+                        <dt class="col-sm-5">Intentos erróneos</dt>
+                        <dd class="col-sm-7">@Model.IntentosErroneos</dd>
+
+                        <dt class="col-sm-5">Contraseñas anteriores</dt>
+                        <dd class="col-sm-7">@Model.NumeroPasswordsAnteriores</dd>
+
+                        <dt class="col-sm-5">Último acceso</dt>
+                        <dd class="col-sm-7">@Model.FechaUltimoAccesoTexto</dd>
+
+                        <dt class="col-sm-5">Acceso actual</dt>
+                        <dd class="col-sm-7">@Model.FechaAccesoActualTexto</dd>
+
+                        <dt class="col-sm-5">Último cambio de contraseña</dt>
+                        <dd class="col-sm-7">@Model.UltimoCambioPasswordTexto</dd>
+
+                        <dt class="col-sm-5">Bloqueo de acceso hasta</dt>
+                        <dd class="col-sm-7">@Model.BloquearAccesoHastaTexto</dd>
+
+                        <dt class="col-sm-5">Caducidad de la cuenta</dt>
+                        <dd class="col-sm-7">@Model.CaducidadCuentaTexto</dd>
+                    </dl>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-5">
+            <section class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Cambiar contraseña</h2>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" asp-page-handler="CambiarPassword">
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PasswordActual"
+                                   class="form-label">
+                            </label>
+                            <input asp-for="PasswordActual"
+                                   class="form-control"
+                                   autocomplete="current-password" />
+                            <span asp-validation-for="PasswordActual"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PasswordNueva"
+                                   class="form-label">
+                            </label>
+                            <input asp-for="PasswordNueva"
+                                   class="form-control"
+                                   autocomplete="new-password" />
+                            <span asp-validation-for="PasswordNueva"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ConfirmacionPassword"
+                                   class="form-label">
+                            </label>
+                            <input asp-for="ConfirmacionPassword"
+                                   class="form-control"
+                                   autocomplete="new-password" />
+                            <span asp-validation-for="ConfirmacionPassword"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-warning">
+                            Cambiar contraseña
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

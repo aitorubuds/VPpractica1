@@ -1,0 +1,56 @@
+﻿@page
+@model www.Pages.Login.IndexModel
+
+@{
+    ViewData["Title"] = "Principal";
+    ViewData["NombreProyecto"] = "-";
+    ViewData["TituloCabecera"] = "Identificación-Validación";
+    ViewData["MostrarMenuUsuario"] = false;
+}
+
+<link rel="stylesheet"
+      href="~/css/login.css"
+      asp-append-version="true" />
+
+<div class="pagina-login">
+
+    <div class="login">
+
+        <h1>Identifícate</h1>
+
+        <form method="post">
+
+            <div class="campo">
+
+                <label asp-for="NombreUsuario">
+                    Correo electrónico
+                </label>
+
+                <input asp-for="NombreUsuario"
+                       id="txtUsuario"
+                       type="email"
+                       autocomplete="email" />
+
+                <span asp-validation-for="NombreUsuario"
+                      class="error">
+                </span>
+
+            </div>
+
+            <button id="btnSiguiente"
+                    type="submit"
+                    class="boton-principal">
+
+                Siguiente
+
+            </button>
+
+        </form>
+
+        <p class="pie">
+            Test Project Management Platform
+        </p>
+
+    </div>
+
+</div>

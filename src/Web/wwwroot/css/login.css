@@ -1,0 +1,79 @@
+﻿/* Contenedor que centra exclusivamente la página de login */
+
+.pagina-login {
+    width: 100%;
+    min-height: calc(100vh - 56px - 70px);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.login {
+    width: min(100%, 270px);
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #d9e2dc;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+    .login h1 {
+        margin: 0 0 0.8rem;
+        color: #2e7d32;
+        font-size: 1.25rem;
+        text-align: center;
+    }
+
+    .login label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .login input {
+        width: 100%;
+        padding: 0.55rem 0.65rem;
+        border: 1px solid #bcc8c0;
+        border-radius: 6px;
+        font: inherit;
+    }
+
+        .login input:focus {
+            border-color: #2e7d32;
+            outline: 2px solid #a5d6a7;
+        }
+
+    .login button {
+        width: 100%;
+        margin-top: 0.7rem;
+        padding: 0.55rem;
+        color: #ffffff;
+        background: #2e7d32;
+        border: 0;
+        border-radius: 6px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .login button:hover {
+            background: #256628;
+        }
+
+    .login .error {
+        display: block;
+        min-height: 1rem;
+        margin-top: 0.25rem;
+        color: #b3261e;
+        font-size: 0.75rem;
+    }
+
+    .login .pie {
+        margin: 0.75rem 0 0;
+        color: #66736a;
+        font-size: 0.68rem;
+        text-align: center;
+    }

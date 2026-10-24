@@ -1,0 +1,467 @@
+﻿@page
+@model www.Pages.Proyectos.Seleccionar.IndexModel
+
+@{
+    ViewData["Title"] = "Proyectos";
+
+    ViewData["TituloCabecera"] =
+        "Gestión de proyectos";
+
+    ViewData["NombreProyecto"] =
+        Model.NombreProyectoActual;
+
+    ViewData["MostrarMenuUsuario"] =
+        true;
+
+    ViewData["NombreUsuario"] =
+        Model.NombreUsuario;
+}
+
+<div class="container-fluid py-3">
+
+    <div class="d-flex
+                flex-row
+                flex-nowrap
+                justify-content-between
+                align-items-start
+                gap-3
+                mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">
+                Gestión de proyectos
+            </h1>
+
+            <p class="text-body-secondary mb-0">
+                Cree un proyecto o seleccione
+                el proyecto actual.
+            </p>
+        </div>
+
+        <a asp-page="/Principal/Index"
+           class="btn btn-outline-secondary">
+
+            Volver
+
+        </a>
+
+    </div>
+
+    @if (TempData["MensajeCorrecto"] is string mensaje)
+    {
+        <div class="alert alert-success"
+             role="status">
+
+            @mensaje
+
+        </div>
+    }
+
+    @if (!ViewContext.ModelState.IsValid)
+    {
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger">
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <div class="col-lg-4">
+
+            <section class="card shadow-sm">
+
+                <div class="card-header">
+
+                    <h2 class="h5 mb-0">
+                        Nuevo proyecto
+                    </h2>
+
+                </div>
+
+                <div class="card-body">
+
+                    <form method="post"
+                          asp-page-handler="Crear">
+
+                        <div class="mb-3">
+
+                            <label asp-for="Nombre"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Nombre"
+                                   class="form-control"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="Nombre"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label asp-for="Siglas"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Siglas"
+                                   class="form-control"
+                                   maxlength="15"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="Siglas"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label asp-for="Descripcion"
+                                   class="form-label">
+                            </label>
+
+                            <textarea asp-for="Descripcion"
+                                      class="form-control"
+                                      rows="5">
+                            </textarea>
+
+                            <span asp-validation-for="Descripcion"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            Añadir proyecto
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <div class="col-lg-8">
+
+            <section class="card shadow-sm mb-4">
+
+                <div class="card-header
+                            d-flex
+                            flex-row
+                            flex-nowrap
+                            justify-content-between
+                            align-items-center
+                            gap-3">
+
+                    <div>
+                        <h2 class="h5 mb-1">
+                            Proyectos disponibles
+                        </h2>
+
+                        <p class="small
+                                  text-body-secondary
+                                  mb-0">
+
+                            Pueden seleccionarse
+                            como proyecto actual.
+
+                        </p>
+                    </div>
+
+                    <span class="badge text-bg-success">
+                        @Model.ProyectosDisponibles.Count
+                    </span>
+
+                </div>
+
+                <div class="card-body">
+
+                    @if (Model.ProyectosDisponibles.Count == 0)
+                    {
+                        <div class="alert alert-info mb-0">
+
+                            No hay proyectos disponibles.
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex
+                                    flex-column
+                                    gap-3">
+
+                            @foreach (
+                                var proyecto
+                                in Model.ProyectosDisponibles)
+                            {
+                                bool estaSeleccionado =
+                                    Model.IdProyectoActual
+                                    == proyecto.IdProyecto;
+
+                                <article class="border
+                                                rounded
+                                                p-3
+                                                @(estaSeleccionado
+                                                    ? "border-success bg-success-subtle"
+                                                    : "bg-body")">
+
+                                    <div class="d-flex
+                                                flex-row
+                                                flex-nowrap
+                                                justify-content-between
+                                                align-items-center
+                                                gap-3">
+
+                                        <div class="flex-grow-1
+                                                    overflow-hidden">
+
+                                            <div class="d-flex
+                                                        flex-row
+                                                        flex-wrap
+                                                        align-items-center
+                                                        gap-2
+                                                        mb-2">
+
+                                                <h3 class="h6 mb-0">
+                                                    @proyecto.Nombre
+                                                </h3>
+
+                                                <span class="badge
+                                                             text-bg-secondary">
+
+                                                    @proyecto.Siglas
+
+                                                </span>
+
+                                                @if (estaSeleccionado)
+                                                {
+                                                    <span class="badge
+                                                                 text-bg-success">
+
+                                                        Proyecto actual
+
+                                                    </span>
+                                                }
+
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                proyecto.Descripcion))
+                                            {
+                                                <p class="mb-2
+                                                          text-body-secondary">
+
+                                                    @proyecto.Descripcion
+
+                                                </p>
+                                            }
+
+                                            <small class="text-body-secondary">
+
+                                                Creado el
+                                                @proyecto.FechaCreacion.ToString(
+                                                    "dd/MM/yyyy")
+
+                                            </small>
+
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+
+                                            @if (estaSeleccionado)
+                                            {
+                                                <button type="button"
+                                                        class="btn
+                                                               btn-success"
+                                                        disabled>
+
+                                                    Seleccionado
+
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <form method="post"
+                                                      asp-page-handler="Seleccionar">
+
+                                                    <input type="hidden"
+                                                           name="idProyecto"
+                                                           value="@proyecto.IdProyecto" />
+
+                                                    <button type="submit"
+                                                            class="btn
+                                                                   btn-outline-primary">
+
+                                                        Seleccionar
+
+                                                    </button>
+
+                                                </form>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+                            }
+
+                        </div>
+                    }
+
+                </div>
+
+            </section>
+
+            <section class="card shadow-sm">
+
+                <div class="card-header
+                            d-flex
+                            flex-row
+                            flex-nowrap
+                            justify-content-between
+                            align-items-center
+                            gap-3">
+
+                    <div>
+                        <h2 class="h5 mb-1">
+                            Proyectos desactivados
+                        </h2>
+
+                        <p class="small
+                                  text-body-secondary
+                                  mb-0">
+
+                            Se conservan para consulta,
+                            pero no pueden seleccionarse.
+
+                        </p>
+                    </div>
+
+                    <span class="badge text-bg-secondary">
+                        @Model.ProyectosDesactivados.Count
+                    </span>
+
+                </div>
+
+                <div class="card-body">
+
+                    @if (Model.ProyectosDesactivados.Count == 0)
+                    {
+                        <div class="alert
+                                    alert-light
+                                    border
+                                    mb-0">
+
+                            No hay proyectos desactivados.
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex
+                                    flex-column
+                                    gap-3">
+
+                            @foreach (
+                                var proyecto
+                                in Model.ProyectosDesactivados)
+                            {
+                                <article class="border
+                                                rounded
+                                                p-3
+                                                bg-body-secondary
+                                                text-body-secondary">
+
+                                    <div class="d-flex
+                                                flex-row
+                                                flex-nowrap
+                                                justify-content-between
+                                                align-items-center
+                                                gap-3">
+
+                                        <div class="flex-grow-1
+                                                    overflow-hidden">
+
+                                            <div class="d-flex
+                                                        flex-row
+                                                        flex-wrap
+                                                        align-items-center
+                                                        gap-2
+                                                        mb-2">
+
+                                                <h3 class="h6 mb-0">
+                                                    @proyecto.Nombre
+                                                </h3>
+
+                                                <span class="badge
+                                                             text-bg-secondary">
+
+                                                    @proyecto.Siglas
+
+                                                </span>
+
+                                                <span class="badge
+                                                             text-bg-dark">
+
+                                                    Desactivado
+
+                                                </span>
+
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                proyecto.Descripcion))
+                                            {
+                                                <p class="mb-2">
+                                                    @proyecto.Descripcion
+                                                </p>
+                                            }
+
+                                            <small>
+
+                                                Creado el
+                                                @proyecto.FechaCreacion.ToString(
+                                                    "dd/MM/yyyy")
+
+                                            </small>
+
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+
+                                            <button type="button"
+                                                    class="btn
+                                                           btn-outline-secondary"
+                                                    disabled>
+
+                                                No disponible
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+                            }
+
+                        </div>
+                    }
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>

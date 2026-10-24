@@ -1,0 +1,60 @@
+﻿@{
+    string tituloCabecera = ViewData["TituloCabecera"]?.ToString() ?? ""; string nombreProyecto = ViewData["NombreProyecto"]?.ToString() ?? "Sin proyecto seleccionado"; bool mostrarMenuUsuario = ViewData["MostrarMenuUsuario"] as bool? ?? false; string nombreUsuario = ViewData["NombreUsuario"]?.ToString() ?? "";
+}
+<!DOCTYPE html><html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title> @ViewData["Title"] - Test Project Management Platform </title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header class="cabecera-aplicacion">
+        <div class="cabecera-fila">
+            <!-- ZONA IZQUIERDA: PROYECTO --> 
+            <div class="cabecera-proyecto">
+                <span class="cabecera-aplicacion"> Test Project Management Platform </span>
+                <span class="cabecera-etiqueta"> [</span>
+                <span class="badge text-bg-primary"> @nombreProyecto </span>
+                <span class="cabecera-etiqueta"> ]</span>
+            </div>
+            <!-- ZONA CENTRAL: TÍTULO -->
+            <div class="cabecera-titulo"> @tituloCabecera </div>
+            <!-- ZONA DERECHA: USUARIO -->
+            <div class="cabecera-usuario">
+                @if (mostrarMenuUsuario && !string.IsNullOrWhiteSpace(nombreUsuario)) {
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            @nombreUsuario
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li> <a class="dropdown-item" asp-page="/Usuarios/Perfil/Index"> Ver perfil </a> </li>
+                            <li> <a class="dropdown-item" asp-page="/Log/Index"> Log de eventos </a> </li>
+                            <li> <a class="dropdown-item" asp-page="/Proyectos/Seleccionar/index"> Seleccionar proyecto </a> </li>
+                            <li> <hr class="dropdown-divider" /> </li>
+                            <li>
+                                <form method="post" 
+                                    asp-page="/Principal/Index"
+                                    asp-page-handler="CerrarSesion">
+                                    <button type="submit" 
+                                        class="dropdown-item"> Cerrar sesión </button>
+                                </form> 
+                            </li> 
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="contenido-principal"> @RenderBody() </main>
+
+    <footer class="pie-aplicacion"> © 2026 Universidad de Burgos. Todos los derechos reservados. </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" 
+        crossorigin="anonymous">
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

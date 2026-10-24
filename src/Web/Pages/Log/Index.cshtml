@@ -1,0 +1,262 @@
+﻿@page
+@model www.Pages.Log.IndexModel
+
+@{
+    ViewData["Title"] = "Log de eventos";
+
+    ViewData["TituloCabecera"] =
+        "Log de eventos";
+
+    ViewData["MostrarMenuUsuario"] =
+        true;
+
+    ViewData["NombreUsuario"] =
+        Model.NombreUsuario;
+}
+
+<div class="contenido-principal">
+
+    <!-- TÍTULO Y BOTONES SUPERIORES -->
+
+    <div class="d-flex
+        justify-content-between
+        align-items-start
+        gap-3
+        mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">
+                Log de eventos
+            </h1>
+
+            <p class="text-body-secondary mb-0">
+                Actividad registrada en la aplicación.
+            </p>
+        </div>
+
+        <div class="d-flex
+            flex-row
+            flex-nowrap
+            gap-2">
+
+            <a asp-page="/Log/Index"
+               class="btn btn-outline-primary">
+
+                Actualizar
+
+            </a>
+
+            <a asp-page="/Principal/Index"
+               class="btn btn-outline-secondary">
+
+                Volver
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTROS -->
+
+    <form method="get"
+          class="card card-body mb-4">
+
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-6">
+
+                <label asp-for="TextoBusqueda"
+                       class="form-label">
+
+                    Buscar
+
+                </label>
+
+                <input asp-for="TextoBusqueda"
+                       class="form-control"
+                       placeholder="Mensaje o usuario" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label asp-for="NivelSeleccionado"
+                       class="form-label">
+
+                    Nivel
+
+                </label>
+
+                <select asp-for="NivelSeleccionado"
+                        class="form-select">
+
+                    <option value="">
+                        Todos los niveles
+                    </option>
+
+                    @foreach (var nivel in Model.Niveles)
+                    {
+                        <option value="@nivel">
+                            @nivel
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="d-flex
+                    flex-row
+                    flex-nowrap
+                    gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Filtrar
+
+                    </button>
+
+                    <a asp-page="/Log/Index"
+                       class="btn btn-outline-secondary">
+
+                        Limpiar
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <!-- RESULTADOS -->
+    @if (Model.Eventos.Count == 0)
+    {
+        <div class="alert alert-info"
+             role="status">
+
+            No hay eventos que coincidan con los criterios
+            de búsqueda.
+
+        </div>
+    }
+    else
+    {
+        <div class="card">
+
+            <div class="card-header
+                d-flex
+                justify-content-between
+                align-items-center">
+
+                <span class="fw-semibold">
+                    Eventos registrados
+                </span>
+
+                <span class="badge text-bg-secondary">
+                    @Model.Eventos.Count
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table
+                    table-striped
+                    table-hover
+                    align-middle
+                    mb-0">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col"
+                                class="text-nowrap">
+                                Fecha y hora
+                            </th>
+
+                            <th scope="col">
+                                Nivel
+                            </th>
+
+                            <th scope="col">
+                                Usuario
+                            </th>
+
+                            <th scope="col">
+                                Mensaje
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var evento in Model.Eventos)
+                        {
+                            <tr>
+
+                                <td class="text-nowrap">
+                                    @evento.FechaHora.ToString(
+                                        "dd/MM/yyyy HH:mm:ss")
+                                </td>
+
+                                <td>
+                                    <span class="@ObtenerClaseNivel(
+                                                                                evento.Nivel)">
+
+                                        @evento.Nivel
+
+                                    </span>
+                                </td>
+
+                                <td class="text-nowrap">
+                                    @evento.NombreUsuario
+                                </td>
+
+                                <td class="mensaje-evento">
+                                    @evento.Mensaje
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@functions
+{
+    private string ObtenerClaseNivel(string? nivel)
+    {
+        return nivel?.Trim().ToLowerInvariant() switch
+        {
+            "información" or "informacion" or "info"
+                => "badge text-bg-info",
+
+            "correcto" or "éxito" or "exito"
+                => "badge text-bg-success",
+
+            "aviso" or "warning"
+                => "badge text-bg-warning",
+
+            "error"
+                => "badge text-bg-danger",
+
+            _ => "badge text-bg-secondary"
+        };
+    }
+}

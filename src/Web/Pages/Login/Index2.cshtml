@@ -1,0 +1,50 @@
+﻿@page
+@model www.Pages.Login.Index2Model
+
+@{
+    ViewData["Title"] = "Principal";
+    ViewData["NombreProyecto"] = "-";
+    ViewData["TituloCabecera"] = "Identificación-Validación";
+    ViewData["MostrarMenuUsuario"] = false;
+}
+
+<link rel="stylesheet"
+    href="~/css/password.css"
+    asp-append-version="true" />
+
+<div class="pagina-password">
+    <div class="password">
+        <h1>Valida tu contraseña</h1>
+
+        <form method="post">
+            <label asp-for="Contraseña">Contraseña</label>
+
+            <input asp-for="Contraseña"
+                   id="txtContraseña"
+                   type="password"
+                   placeholder="Introduce tu contraseña"
+                   autocomplete="password" />
+
+            <span asp-validation-for="Contraseña"
+                  class="error"></span>
+
+            <div class="botones">
+
+                <button type="submit"
+                        id="btnAtras"
+                        class="boton-atras"
+                        asp-page-handler="Atras">
+                    Atrás
+                </button>
+
+                <button type="submit"
+                        id="btnAceptar"
+                        class="boton-aceptar"
+                        asp-page-handler="Aceptar">
+                    Validar
+                </button>
+            </div>
+        </form>
+        <p class="pie">Test Project Management Platform</p>
+    </div>
+</div>

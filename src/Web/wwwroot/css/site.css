@@ -1,0 +1,294 @@
+/* ==========================================================
+   ESTRUCTURA VERTICAL DE LA PÁGINA
+   ========================================================== */
+
+html {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    color: #212529;
+    background-color: #f4f6f8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* La zona principal ocupa todo el espacio disponible */
+
+main,
+.contenido-pagina {
+    flex: 1 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 1.5rem;
+}
+
+/* ========================================================== COLORES GENERALES DE CABECERA Y PIE ========================================================== */
+
+:root {
+    --color-fondo-cabecera: #000000;
+    --color-texto-cabecera: #ffa500;
+    --color-texto-cabecera-hover: #ffc14d;
+    --color-borde-cabecera: #3d3d3d;
+}
+/* ========================================================== CABECERA ========================================================== */
+
+.cabecera-aplicacion {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 1.2rem;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    border-bottom: 1px solid var(--color-borde-cabecera);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+}
+
+.cabecera-fila {
+    width: 100%;
+    min-width: 0;
+    min-height: 56px;
+    margin: 0;
+    padding: 0.5rem 1.25rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1rem;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+}
+/* ========================================================== ZONA IZQUIERDA ========================================================== */
+
+.cabecera-proyecto {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items:flex-start;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    overflow: hidden;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    font-size: 0.875rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.cabecera-etiqueta {
+    flex: 0 0 auto;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* Insignia del proyecto en negro y naranja */
+
+.cabecera-proyecto .badge {
+    display: inline-block;
+    max-width: 220px;
+    padding: 0.35rem 0.55rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-texto-cabecera) !important;
+    background-color: var(--color-fondo-cabecera) !important;
+    border: 1px solid var(--color-texto-cabecera);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+/* ========================================================== ZONA CENTRAL ========================================================== */
+
+.cabecera-titulo {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+}
+    /* Evita que los encabezados cambien los colores y tamaños */
+
+    .cabecera-titulo h1, .cabecera-titulo h2, .cabecera-titulo h3, .cabecera-titulo p, .cabecera-titulo span {
+        display: inline;
+        margin: 0;
+        padding: 0;
+        color: inherit;
+        background-color: transparent;
+        font: inherit;
+    }
+/* ========================================================== ZONA DERECHA ========================================================== */
+
+.cabecera-usuario {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    white-space: nowrap;
+}
+
+    .cabecera-usuario .dropdown {
+        flex: 0 0 auto;
+        display: inline-block;
+        width: auto;
+        color: var(--color-texto-cabecera);
+        background-color: var(--color-fondo-cabecera);
+    }
+    /* Botón que abre el menú */
+
+    .cabecera-usuario .dropdown-toggle {
+        display: inline-flex;
+        max-width: 220px;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-texto-cabecera);
+        background-color: var(--color-fondo-cabecera);
+        border: 1px solid var(--color-texto-cabecera);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+        .cabecera-usuario .dropdown-toggle:hover, .cabecera-usuario .dropdown-toggle:focus, .cabecera-usuario .dropdown-toggle:active, .cabecera-usuario .dropdown-toggle.show {
+            color: var(--color-fondo-cabecera);
+            background-color: var(--color-texto-cabecera);
+            border-color: var(--color-texto-cabecera);
+        }
+    /* ========================================================== MENÚ DESPLEGABLE ========================================================== */
+
+    .cabecera-usuario .dropdown-menu {
+        min-width: 220px;
+        margin-top: 0.5rem;
+        color: var(--color-texto-cabecera);
+        background-color: var(--color-fondo-cabecera);
+        border: 1px solid var(--color-texto-cabecera);
+        font-size : 0.9rem;
+    }
+
+    .cabecera-usuario .dropdown-item {
+        padding: 0.55rem 1rem;
+        color: var(--color-texto-cabecera);
+        background-color: var(--color-fondo-cabecera);
+        white-space: nowrap;
+    }
+
+        .cabecera-usuario .dropdown-item:hover, .cabecera-usuario .dropdown-item:focus {
+            color: var(--color-fondo-cabecera);
+            background-color: var(--color-texto-cabecera);
+            text-decoration: none;
+        }
+
+    .cabecera-usuario .dropdown-divider {
+        border-top-color: var(--color-texto-cabecera);
+        opacity: 0.6;
+    }
+    /* Formulario de cierre de sesión */
+
+    .cabecera-usuario .dropdown-menu form {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: var(--color-fondo-cabecera);
+    }
+
+        .cabecera-usuario .dropdown-menu form button {
+            width: 100%;
+            color: var(--color-texto-cabecera) !important;
+            background-color: var(--color-fondo-cabecera);
+            border: 0;
+            text-align: left;
+        }
+
+            .cabecera-usuario .dropdown-menu form button:hover, .cabecera-usuario .dropdown-menu form button:focus {
+                color: var(--color-fondo-cabecera) !important;
+                background-color: var(--color-texto-cabecera);
+            }
+/* ========================================================== PIE GENERAL DEL LAYOUT ========================================================== */
+
+footer, .pie-aplicacion {
+    width: 100%;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    color: var(--color-texto-cabecera);
+    background-color: var(--color-fondo-cabecera);
+    border-top: 1px solid var(--color-borde-cabecera);
+    font-size: 0.8rem;
+    font-weight: normal;
+    text-align: center;
+}
+
+    footer a, .pie-aplicacion a {
+        color: var(--color-texto-cabecera);
+        background-color: transparent;
+    }
+
+        footer a:hover, footer a:focus, .pie-aplicacion a:hover, .pie-aplicacion a:focus {
+            color: var(--color-texto-cabecera-hover);
+        }
+
+        /* ========================================================== FOCO DE TECLADO ========================================================== */
+
+        .cabecera-aplicacion a:focus-visible, .cabecera-aplicacion button:focus-visible, footer a:focus-visible, footer button:focus-visible {
+            outline: 3px solid var(--color-texto-cabecera-hover);
+            outline-offset: 2px;
+        }
+
+/* ==========================================================
+   ESTRUCTURA VERTICAL DE LA PÁGINA
+   ========================================================== */
+
+html {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    color: #212529;
+    background-color: #f4f6f8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+
+/* La zona principal ocupa todo el espacio disponible */
+
+main,
+.contenido-pagina {
+    flex: 1 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 1.5rem;
+}
