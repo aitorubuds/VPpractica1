@@ -36,12 +36,12 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 ## Bloque II: Servicios Criptográficos y Pruebas Base (Fases 5 - 8)
 
-- [ ] **Fase 05 — Verificación de Servicios Criptográficos en `Nucleo`**
+- [X] **Fase 05 — Verificación de Servicios Criptográficos en `Nucleo`**
   - Revisar que `ServicioHash.cs`, `ResultadoHash.cs`, `ServicioCifrado.cs` y `ServicioContrasenas.cs` compilan en `Nucleo/Seguridad/`.
   - Comprobar que no hay dependencias circulares ni código incompleto.
   - *Criterio de éxito:* Las 4 clases compilan y sus métodos públicos están disponibles para `Nucleo.Tests`.
 
-- [ ] **Fase 06 — Pruebas de Caja Blanca de `ServicioContrasenas`**
+- [X] **Fase 06 — Pruebas de Caja Blanca de `ServicioContrasenas`**
   - Crear `tests/Nucleo.Tests/Seguridad/ServicioContrasenasTests.cs`.
   - Implementar mínimo 8 casos de prueba para cubrir el 100% de la complejidad ciclomática:
     1. Contraseña válida completa.
