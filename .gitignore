@@ -35,3 +35,7 @@ bld/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+## Archivos del profesor
+archivos_profesor/
+Archivos-*/
