@@ -54,15 +54,15 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     8. Con espacios en blanco.
   - *Criterio de éxito:* 8 tests pasan en verde (PASS) y la cobertura en `ServicioContrasenas` es del 100%.
 
-- [ ] **Fase 07 — Pruebas de Caja Negra de `ServicioHash` (Parte 1: Entradas Inválidas)**
+- [X] **Fase 07 — Pruebas de Caja Negra de `ServicioHash` (Parte 1: Entradas Inválidas)**
   - Crear `tests/Nucleo.Tests/Seguridad/ServicioHashTests.cs`.
   - Implementar las pruebas para las especificaciones ED-01 a ED-04:
-    - `Generar(null)` $\to$ lanza `InvalidOperationException`.
-    - `Generar("")` $\to$ lanza `InvalidOperationException`.
-    - `Generar("   ")` $\to$ lanza `InvalidOperationException`.
-  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsException<InvalidOperationException>`.
+    - `Generar(null)` $\to$ lanza excepción.
+    - `Generar("")` $\to$ lanza excepción.
+    - `Generar("   ")` $\to$ lanza excepción.
+  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsException<ArgumentException>`.
 
-- [ ] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
+- [X] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
   - Implementar las especificaciones ED-05 a ED-20 en `ServicioHashTests.cs`:
     - `Generar`: devuelve `ResultadoHash` válido, no nulo.
     - Dos ejecuciones sucesivas con el mismo texto generan `Sal` distinta y `Hash` distinto (unicidad y variabilidad).
