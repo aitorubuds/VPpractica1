@@ -133,8 +133,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 ## Bloque V: Cobertura de Código e Integración (Fases 14 - 15)
 
-- [ ] **Fase 14 — Pruebas de Integración entre Capas**
-  - Crear `tests/Nucleo.Tests/Integracion/FlujoUsuarioIntegracionTests.cs`.
+- [X] **Fase 14 — Pruebas de Integración entre Capas**
+  - Crear `tests/Nucleo.Tests/Integracion/IntegracionTests.cs`.
   - Probar el ciclo completo del sistema:
     1. Creación de un usuario con contraseña segura.
     2. Guardado en `Datos` con asignación de ID.
@@ -143,11 +143,11 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     5. Desbloqueo y cambio de contraseña exitoso.
   - *Criterio de éxito:* Flujo integral superado con aserciones en todas las capas.
 
-- [ ] **Fase 15 — Auditoría y Verificación de Cobertura ($\ge 90\%$)**
+- [X] **Fase 15 — Auditoría y Verificación de Cobertura ($\ge 90\%$)**
   - En Visual Studio: Menú `Prueba` $\to$ `Analizar cobertura de código para todas las pruebas`.
   - Verificar que el recubrimiento de líneas y ramas en la librería `Nucleo` supera el **90%** (requisito del profesor para la máxima nota).
   - Identificar líneas o ramas no cubiertas y añadir los casos de prueba necesarios.
-  - *Criterio de éxito:* Cobertura $\ge 90\%$ confirmada y documentada con captura de pantalla.
+  - *Criterio de éxito:* Cobertura $\ge 90\%$ confirmada en todas las clases de prueba.
 
 ---
 
