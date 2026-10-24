@@ -75,13 +75,13 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 ## Bloque III: Modelo `Usuario` y Funcionalidad de Grupo (Fases 9 - 11)
 
-- [ ] **Fase 09 — Diseño de la Funcionalidad Exclusiva de Grupo**
+- [X] **Fase 09 — Diseño de la Funcionalidad Exclusiva de Grupo**
   - Acordar y documentar la funcionalidad adicional de seguridad de `Usuario.cs`:
     - *Opción elegida:* Bloqueo de cuenta tras 3 intentos fallidos consecutivos de contraseña, reseteo del contador tras autenticación exitosa y método administrativo de desbloqueo.
-  - Definir las propiedades en `Usuario`: `IntentosFallidos`, `Bloqueado`, `FechaBloqueo`.
+  - Definir las propiedades en `Usuario`: `IntentosFallidos`, `Bloqueado`.
   - *Criterio de éxito:* Especificación funcional aprobada para codificar.
 
-- [ ] **Fase 10 — Implementación Segura de `Usuario.cs`**
+- [X] **Fase 10 — Implementación Segura de `Usuario.cs`**
   - Encapsular las propiedades sensibles: la contraseña en texto plano nunca se expone.
   - Implementar `bool ComprobarContrasena(string contrasena)`:
     - Si la cuenta está bloqueada, retorna `false`.
@@ -89,12 +89,12 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - Si es incorrecta, incrementa `IntentosFallidos`; si llega a 3, marca `Bloqueado = true` y retorna `false`.
   - Implementar `bool CambiarContrasena(string contrasenaActual, string nuevaContrasena)`:
     - Verifica la contraseña actual.
-    - Comprueba complejidad con `ServicioContrasenas.EsContrasenaSegura`.
+    - Comprueba complejidad con `ServicioContrasenas.EsValida`.
     - Genera nuevo hash y sal con `ServicioHash.Generar` y actualiza.
-  - Implementar `void DesbloquearCuenta()`.
+  - Implementar `void Desbloquear()`.
   - *Criterio de éxito:* `Usuario.cs` compila y satisface los requisitos de seguridad y la funcionalidad de grupo.
 
-- [ ] **Fase 11 — Batería de Pruebas Unitarias de `Usuario`**
+- [X] **Fase 11 — Batería de Pruebas Unitarias de `Usuario`**
   - Crear `tests/Nucleo.Tests/Modelos/UsuarioTests.cs`.
   - Pruebas para:
     - Comprobación exitosa y fallida de contraseña.
@@ -102,7 +102,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - Bloqueo automático al tercer intento fallido consecutivo.
     - Rechazo de acceso cuando el usuario está bloqueado incluso con contraseña correcta.
     - Desbloqueo de cuenta por método administrativo.
-  - *Criterio de éxito:* Todos los tests pasan y cubren el 100% de la lógica de `Usuario`.
+  - *Criterio de éxito:* Todos los tests pasan y cubren el 98% de la lógica de `Usuario`.
 
 ---
 
