@@ -50,7 +50,8 @@ public class IndexModel : PageModel
             var usuario = _datos.LeerUsuario(idUsuario.Value);
             if (usuario is not null)
             { // Registrar el evento antes de limpiar la sesión.
-                _datos.AgregarLog(new EntradaLog(DateTime.Now, "Inicio de Sesión", $"Cierre de Sesión {usuario.EMail}", usuario.ToString()));
+                Auditoria.Registrar(_datos, Auditoria.NivelInfo, Auditoria.CierreSesion,
+                    "Cierre de sesión", usuario);
             }
         }
         EliminarDatosSesion();

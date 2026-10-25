@@ -12,10 +12,12 @@ namespace www.Pages.Usuarios.Perfil;
 public class IndexModel : PageModel
 {
     private readonly IDatos _datos;
+    private readonly ConfiguracionCifrado _cifrado;
 
-    public IndexModel(IDatos datos)
+    public IndexModel(IDatos datos, ConfiguracionCifrado cifrado)
     {
         _datos = datos;
+        _cifrado = cifrado;
     }
 
     public string NombreUsuarioCabecera { get; private set; } = string.Empty;
@@ -71,6 +73,12 @@ public class IndexModel : PageModel
         ErrorMessage = "Los apellidos no pueden superar 150 caracteres.")]
     [Display(Name = "Apellidos")]
     public string Apellidos { get; set; } = string.Empty;
+
+    // Dato sensible: en la base de datos se guarda cifrado
+    [BindProperty]
+    [RegularExpression(@"^\d{9}$", ErrorMessage = "El teléfono debe tener 9 cifras.")]
+    [Display(Name = "Teléfono")]
+    public string? Telefono { get; set; }
 
     [BindProperty]
     [Required(ErrorMessage = "Debe indicar la contraseña actual.")]
@@ -151,6 +159,7 @@ public class IndexModel : PageModel
         usuario.EMail = emailNormalizado;
         usuario.Nombre = Nombre.Trim();
         usuario.Apellidos = Apellidos.Trim();
+        usuario.EstablecerTelefono(Telefono ?? string.Empty, _cifrado.Clave);
 
         _datos.GuardarUsuario(usuario);
 
@@ -228,6 +237,7 @@ public class IndexModel : PageModel
         EMail = usuario.EMail;
         Nombre = usuario.Nombre;
         Apellidos = usuario.Apellidos;
+        Telefono = usuario.ObtenerTelefono(_cifrado.Clave);
     }
 
     private void CargarDatosCuenta(Usuario usuario)
@@ -304,6 +314,7 @@ public class IndexModel : PageModel
         ModelState.Remove(nameof(EMail));
         ModelState.Remove(nameof(Nombre));
         ModelState.Remove(nameof(Apellidos));
+        ModelState.Remove(nameof(Telefono));
     }
 
     private void LimpiarSesion()

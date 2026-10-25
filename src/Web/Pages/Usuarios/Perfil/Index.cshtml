@@ -89,6 +89,19 @@
                                       class="text-danger">
                                 </span>
                             </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Telefono"
+                                       class="form-label">
+                                </label>
+                                <input asp-for="Telefono"
+                                       class="form-control"
+                                       autocomplete="tel" />
+                                <span asp-validation-for="Telefono"
+                                      class="text-danger">
+                                </span>
+                                <div class="form-text">Se guarda cifrado.</div>
+                            </div>
                         </div>
 
                         <button type="submit"

@@ -80,6 +80,14 @@
 
                 <div class="card-body">
 
+                    @if (!Model.PuedeCrear)
+                    {
+                        <p id="avisoSoloAdministrador" class="text-muted mb-0">
+                            Solo el administrador puede crear proyectos.
+                        </p>
+                    }
+                    else
+                    {
                     <form method="post"
                           asp-page-handler="Crear">
 
@@ -141,6 +149,7 @@
                         </button>
 
                     </form>
+                    }
 
                 </div>
 

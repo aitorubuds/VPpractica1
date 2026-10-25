@@ -205,4 +205,40 @@ public class UsuarioTests
         Assert.AreEqual(3, p.Id);
         Assert.AreEqual(3, p.IdProyecto);
     }
+
+    // El teléfono se guarda cifrado y solo se lee con la clave correcta
+    [TestMethod]
+    public void Telefono_SeGuardaCifrado()
+    {
+        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
+        Usuario u = CrearUsuarioPrueba();
+
+        u.EstablecerTelefono(" 600123456 ", clave);
+
+        Assert.DoesNotContain("600123456", u.TelefonoCifrado);
+        Assert.AreEqual("600123456", u.ObtenerTelefono(clave));
+    }
+
+    // Teléfono vacío o con espacios borra el que hubiera
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void Telefono_Vacio_SeBorra(string telefono)
+    {
+        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
+        Usuario u = CrearUsuarioPrueba();
+        u.EstablecerTelefono("600123456", clave);
+
+        u.EstablecerTelefono(telefono, clave);
+
+        Assert.AreEqual(string.Empty, u.TelefonoCifrado);
+        Assert.AreEqual(string.Empty, u.ObtenerTelefono(clave));
+    }
+
+    // Un usuario nuevo no es administrador
+    [TestMethod]
+    public void Usuario_PorDefecto_NoEsAdministrador()
+    {
+        Assert.IsFalse(new Usuario().EsAdministrador);
+    }
 }
