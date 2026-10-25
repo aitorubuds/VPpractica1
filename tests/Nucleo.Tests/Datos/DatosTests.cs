@@ -276,4 +276,39 @@ public class DatosTests
         Assert.IsNotNull(_datos.EliminarUsuario(u.Id));
         Assert.IsNull(_datos.EliminarUsuario(u.Id));
     }
+
+    // 17. Las colecciones son copias: cambiarlas desde fuera no afecta a la base de datos
+    [TestMethod]
+    public void Colecciones_SonCopias_NoModificanDatos()
+    {
+        Usuario u = _datos.GuardarUsuario(new Usuario { Cuenta = "u1" })!;
+        Rol r = _datos.GuardarRol(new Rol { Nombre = "Tester" })!;
+        Proyecto p = _datos.GuardarProyecto(new Proyecto { Nombre = "Web App" })!;
+        _datos.AgregarLog(new EntradaLog { Accion = "Accion1" });
+
+        // Intentamos borrar y añadir saltándonos los métodos de Datos
+        _datos.Usuarios.Remove(u.Id);
+        _datos.Roles.Clear();
+        _datos.Proyectos[999] = new Proyecto { Id = 999, Nombre = "Colado" };
+        _datos.Logs.Clear();
+
+        Assert.IsNotNull(_datos.LeerUsuario(u.Id));
+        Assert.IsNotNull(_datos.LeerRol(r.Id));
+        Assert.IsNull(_datos.LeerProyecto(999));
+        Assert.IsNotNull(_datos.LeerProyecto(p.Id));
+        Assert.AreEqual(1, _datos.Logs.Count);
+    }
+
+    // 18. Cada consulta devuelve una copia nueva con los datos actuales
+    [TestMethod]
+    public void Colecciones_ReflejanCambiosPosteriores()
+    {
+        var antes = _datos.Usuarios;
+
+        _datos.GuardarUsuario(new Usuario { Cuenta = "u1" });
+
+        Assert.AreEqual(0, antes.Count);
+        Assert.AreEqual(1, _datos.Usuarios.Count);
+        Assert.AreNotSame(_datos.Usuarios, _datos.Usuarios);
+    }
 }

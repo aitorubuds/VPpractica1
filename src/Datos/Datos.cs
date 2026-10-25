@@ -14,10 +14,11 @@ public class Datos : IDatos
     private int _ultimoIdRol = 0;
     private int _ultimoIdProyecto = 0;
 
-    public Dictionary<int, Usuario> Usuarios => _usuarios;
-    public Dictionary<int, Rol> Roles => _roles;
-    public Dictionary<int, Proyecto> Proyectos => _proyectos;
-    public List<EntradaLog> Logs => _logs;
+    // Se devuelven copias para que desde fuera no se pueda tocar el almacenamiento interno
+    public Dictionary<int, Usuario> Usuarios => new(_usuarios);
+    public Dictionary<int, Rol> Roles => new(_roles);
+    public Dictionary<int, Proyecto> Proyectos => new(_proyectos);
+    public List<EntradaLog> Logs => new(_logs);
 
     public Usuario? GuardarUsuario(Usuario usuario)
     {
