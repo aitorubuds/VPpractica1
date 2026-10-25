@@ -23,7 +23,7 @@ public class Datos : IDatos
     public Usuario? GuardarUsuario(Usuario usuario)
     {
         // Si el código no existe no se puede actualizar
-        if (usuario.Id >= 0 && !_usuarios.ContainsKey(usuario.Id))
+        if (usuario is null || (usuario.Id >= 0 && !_usuarios.ContainsKey(usuario.Id)))
         {
             return null;
         }
@@ -50,6 +50,12 @@ public class Datos : IDatos
 
     public Usuario? LeerUsuario(string eMail)
     {
+        // Sin email no se busca: si no, "" encontraría a los usuarios sin email
+        if (string.IsNullOrWhiteSpace(eMail))
+        {
+            return null;
+        }
+
         // El email no distingue mayúsculas
         return _usuarios.Values.FirstOrDefault(
             u => string.Equals(u.EMail, eMail, StringComparison.OrdinalIgnoreCase));
@@ -75,17 +81,17 @@ public class Datos : IDatos
 
     private bool EmailEnUso(string eMail, int idUsuario)
     {
-        if (string.IsNullOrWhiteSpace(eMail))
-        {
-            return false;
-        }
-
         Usuario? otro = LeerUsuario(eMail);
         return otro is not null && otro.Id != idUsuario;
     }
 
     public Rol? GuardarRol(Rol rol)
     {
+        if (rol is null)
+        {
+            return null;
+        }
+
         if (rol.Id < 0)
         {
             rol.Id = ++_ultimoIdRol;
@@ -125,6 +131,11 @@ public class Datos : IDatos
 
     public Proyecto? GuardarProyecto(Proyecto proyecto)
     {
+        if (proyecto is null)
+        {
+            return null;
+        }
+
         if (proyecto.Id < 0)
         {
             proyecto.Id = ++_ultimoIdProyecto;
@@ -151,6 +162,9 @@ public class Datos : IDatos
 
     public void AgregarLog(EntradaLog log)
     {
+        // Un log nulo es un error de programación, no se puede ignorar sin más
+        ArgumentNullException.ThrowIfNull(log);
+
         log.Id = _logs.Count + 1;
         _logs.Add(log);
     }

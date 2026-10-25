@@ -406,4 +406,107 @@ public class DatosTests
 
         Assert.AreEqual(1, _datos.Logs.Count);
     }
+
+    #region Escenarios de error
+
+    // 26. Guardar null no rompe y devuelve null
+    [TestMethod]
+    public void Guardar_Nulo_DevuelveNull()
+    {
+        Assert.IsNull(_datos.GuardarUsuario(null!));
+        Assert.IsNull(_datos.GuardarRol(null!));
+        Assert.IsNull(_datos.GuardarProyecto(null!));
+        Assert.AreEqual(0, _datos.Usuarios.Count);
+        Assert.AreEqual(0, _datos.Roles.Count);
+        Assert.AreEqual(0, _datos.Proyectos.Count);
+    }
+
+    // 27. Agregar un log nulo lanza ArgumentNullException y no añade nada
+    [TestMethod]
+    public void AgregarLog_Nulo_LanzaExcepcion()
+    {
+        Assert.ThrowsExactly<ArgumentNullException>(() => _datos.AgregarLog(null!));
+        Assert.AreEqual(0, _datos.Logs.Count);
+    }
+
+    // 28. Buscar por email nulo, vacío o con espacios devuelve null
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void Buscar_EmailNoValido_DevuelveNull(string? email)
+    {
+        // un usuario sin email no debe salir al buscar por ""
+        _datos.GuardarUsuario(new Usuario { Cuenta = "sinEmail" });
+        _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" });
+
+        Assert.IsNull(_datos.LeerUsuario(email!));
+    }
+
+    // 29. Buscar por códigos negativos o cero devuelve null
+    [TestMethod]
+    [DataRow(-1)]
+    [DataRow(0)]
+    [DataRow(int.MinValue)]
+    public void Buscar_CodigoNoValido_DevuelveNull(int id)
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "u1" });
+        _datos.GuardarRol(new Rol { Nombre = "Tester" });
+        _datos.GuardarProyecto(new Proyecto { Nombre = "Web App" });
+
+        Assert.IsNull(_datos.LeerUsuario(id));
+        Assert.IsNull(_datos.LeerRol(id));
+        Assert.IsNull(_datos.LeerProyecto(id));
+    }
+
+    // 30. Limpiar el log cuando está vacío devuelve 0
+    [TestMethod]
+    public void LimpiarLog_Vacio_DevuelveCero()
+    {
+        Assert.AreEqual(0, _datos.LimpiarLog());
+    }
+
+    // 31. Después de Reiniciar los Ids vuelven a empezar en 1
+    [TestMethod]
+    public void Reiniciar_IdsEmpiezanDeNuevo()
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "u1" });
+        _datos.GuardarUsuario(new Usuario { Cuenta = "u2" });
+        _datos.GuardarRol(new Rol { Nombre = "Tester" });
+        _datos.GuardarProyecto(new Proyecto { Nombre = "Web App" });
+
+        _datos.Reiniciar();
+
+        Assert.AreEqual(1, _datos.GuardarUsuario(new Usuario { Cuenta = "nuevo" })!.Id);
+        Assert.AreEqual(1, _datos.GuardarRol(new Rol { Nombre = "Nuevo" })!.Id);
+        Assert.AreEqual(1, _datos.GuardarProyecto(new Proyecto { Nombre = "Nuevo" })!.Id);
+    }
+
+    // 32. Un Id borrado no se reutiliza en el siguiente alta
+    [TestMethod]
+    public void Eliminar_NoReutilizaIds()
+    {
+        Usuario u1 = _datos.GuardarUsuario(new Usuario { Cuenta = "u1" })!;
+        _datos.EliminarUsuario(u1.Id);
+
+        Usuario u2 = _datos.GuardarUsuario(new Usuario { Cuenta = "u2" })!;
+
+        Assert.AreNotEqual(u1.Id, u2.Id);
+    }
+
+    // 33. Los logs reciben Ids consecutivos
+    [TestMethod]
+    public void AgregarLog_IdsConsecutivos()
+    {
+        EntradaLog log1 = new EntradaLog { Accion = "Accion1" };
+        EntradaLog log2 = new EntradaLog { Accion = "Accion2" };
+
+        _datos.AgregarLog(log1);
+        _datos.AgregarLog(log2);
+
+        Assert.AreEqual(1, log1.Id);
+        Assert.AreEqual(2, log2.Id);
+    }
+
+    #endregion
 }
