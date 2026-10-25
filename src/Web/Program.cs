@@ -34,3 +34,6 @@ app.UseSession();
 app.MapRazorPages();
 
 app.Run();
+
+// Para que las pruebas de integración puedan arrancar la web (WebApplicationFactory<Program>)
+public partial class Program { }
