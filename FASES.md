@@ -23,7 +23,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [X] **Fase 03 — Creación del Proyecto de Pruebas Unitarias (`tests/Nucleo.Tests`)**
   - Crear la carpeta `tests/Nucleo.Tests/`.
-  - Crear `Nucleo.Tests.csproj` usando `net10.0`, `MSTest.TestFramework` (3.10.2+), `MSTest.TestAdapter`, `Microsoft.NET.Test.Sdk` y `coverlet.collector`.
+  - Crear `Nucleo.Tests.csproj` con `MSTest.Sdk` (4.5.1) sobre `net10.0` y `global.json` con Microsoft.Testing.Platform (cobertura con `dotnet test --coverage`).
   - Referenciar `src/Nucleo/Nucleo.csproj` y `src/Datos/Datos.csproj`.
   - *Criterio de éxito:* El Explorador de Pruebas de Visual Studio detecta el proyecto.
 

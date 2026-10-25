@@ -24,21 +24,21 @@ public class ServicioHashTests
     [TestMethod]
     public void Generar_TextoNulo()
     {
-        Assert.ThrowsException<ArgumentException>(() => ServicioHash.Generar(null!));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar(null!));
     }
 
     // Si el texto está vacío debe saltar excepción
     [TestMethod]
     public void Generar_TextoVacio()
     {
-        Assert.ThrowsException<ArgumentException>(() => ServicioHash.Generar(""));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar(""));
     }
 
     // Si solo son espacios en blanco también debe saltar excepción
     [TestMethod]
     public void Generar_SoloEspacios()
     {
-        Assert.ThrowsException<ArgumentException>(() => ServicioHash.Generar("   "));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar("   "));
     }
 
     // Si generamos dos veces con el mismo texto, las sales y hashes tienen que ser distintos
