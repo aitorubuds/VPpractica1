@@ -3,6 +3,7 @@ using Datos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nucleo.Modelos;
+using Nucleo.Seguridad;
 using www.Utilidades;
 
 namespace www.Pages.Proyectos.Seleccionar;
@@ -45,6 +46,11 @@ public class IndexModel : PageModel
         get;
         private set;
     } = string.Empty;
+
+    // Solo el administrador ve el formulario de alta
+    public bool PuedeCrear { get; private set; }
+
+    private Usuario? _usuario;
 
     [BindProperty]
     [Required(
@@ -109,6 +115,19 @@ public class IndexModel : PageModel
             return resultado;
         }
 
+        // Crear proyectos es una tarea de gestión: solo el administrador
+        if (!PuedeCrear)
+        {
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.AccesoDenegado,
+                "Intento de crear un proyecto sin ser administrador", _usuario);
+
+            ModelState.AddModelError(
+                string.Empty,
+                "Solo el administrador puede crear proyectos.");
+
+            return Page();
+        }
+
         if (!ModelState.IsValid)
         {
             return Page();
@@ -119,11 +138,9 @@ public class IndexModel : PageModel
         string siglasNormalizadas =
             Siglas.Trim().ToUpperInvariant();
 
+        // Se comprueba contra todos los proyectos, no solo los que ve el usuario
         List<Proyecto> todosLosProyectos =
-        [
-            .. ProyectosDisponibles,
-            .. ProyectosDesactivados
-        ];
+            _datos.ProyectosTodos().ToList();
 
         bool nombreRepetido =
             todosLosProyectos.Any(proyecto =>
@@ -213,6 +230,15 @@ public class IndexModel : PageModel
         Proyecto? proyecto =
             _datos.LeerProyecto(idProyecto);
 
+        // Un proyecto al que no está asignado es como si no existiera para él
+        if (proyecto is not null && !Permisos.PuedeVerProyecto(_usuario, proyecto))
+        {
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.AccesoDenegado,
+                $"Intento de seleccionar el proyecto {proyecto.Siglas} sin estar asignado", _usuario);
+
+            proyecto = null;
+        }
+
         if (proyecto is null)
         {
             ModelState.AddModelError(
@@ -268,13 +294,26 @@ public class IndexModel : PageModel
          */
         NombreUsuario = usuario.ToString();
 
+        // Hace falta permiso del área Proyectos (el invitado no lo tiene)
+        IActionResult? denegado = ControlAcceso.ComprobarArea(this, _datos, usuario, Permisos.AreaProyectos);
+
+        if (denegado is not null)
+        {
+            return denegado;
+        }
+
+        _usuario = usuario;
+        PuedeCrear = Permisos.PuedeCrearProyectos(usuario);
+
         IdProyectoActual =
             HttpContext.Session.GetInt32(
                 ClavesSesion.ProyectoActualId);
 
+        // Cada usuario solo ve los proyectos a los que está asignado
         List<Proyecto> proyectos =
             _datos
                 .ProyectosTodos()
+                .Where(proyecto => Permisos.PuedeVerProyecto(usuario, proyecto))
                 .OrderBy(proyecto => proyecto.Nombre)
                 .ToList();
 

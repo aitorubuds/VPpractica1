@@ -2,6 +2,7 @@ using Datos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nucleo.Modelos;
+using Nucleo.Seguridad;
 using www.Utilidades;
 
 namespace www.Pages.Log;
@@ -47,6 +48,14 @@ public class IndexModel : PageModel
                 ClavesSesion.UsuarioId);
 
             return RedirectToPage("/Login/Index");
+        }
+
+        // El log solo lo ve quien tiene permiso del área Log (el administrador)
+        IActionResult? denegado = ControlAcceso.ComprobarArea(this, _datos, usuario, Permisos.AreaLog);
+
+        if (denegado is not null)
+        {
+            return denegado;
         }
 
         NombreUsuario = usuario.EMail;

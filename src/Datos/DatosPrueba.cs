@@ -1,4 +1,5 @@
 using Nucleo.Modelos;
+using Nucleo.Seguridad;
 using System;
 using System.Collections.Generic;
 
@@ -23,16 +24,20 @@ public static class DatosPrueba
     public const int NumProyectos = 3;
     public const int NumLogs = 2;
 
-    // Devuelve una base de datos nueva ya cargada
-    public static Datos Crear()
+    // Teléfonos de prueba (se guardan cifrados)
+    public const string TelefonoAdmin = "600111222";
+    public const string TelefonoTester = "600333444";
+
+    // Devuelve una base de datos nueva ya cargada; la clave sirve para cifrar los datos sensibles
+    public static Datos Crear(string claveCifrado)
     {
         Datos datos = new Datos();
-        Cargar(datos);
+        Cargar(datos, claveCifrado);
         return datos;
     }
 
     // Vacía la base de datos y la deja en el estado conocido
-    public static void Cargar(IDatos datos)
+    public static void Cargar(IDatos datos, string claveCifrado)
     {
         datos.Reiniciar();
 
@@ -40,24 +45,28 @@ public static class DatosPrueba
         Rol administrador = datos.GuardarRol(new Rol
         {
             Nombre = "Administrador",
-            Permisos = new List<string> { "Proyectos", "Usuarios", "Log", "Perfil" }
+            Permisos = new List<string> { Permisos.AreaProyectos, Permisos.AreaUsuarios, Permisos.AreaLog, Permisos.AreaPerfil }
         })!;
         Rol tester = datos.GuardarRol(new Rol
         {
             Nombre = "Tester",
-            Permisos = new List<string> { "Proyectos", "Perfil" }
+            Permisos = new List<string> { Permisos.AreaProyectos, Permisos.AreaPerfil }
         })!;
         Rol invitado = datos.GuardarRol(new Rol
         {
             Nombre = "Invitado",
-            Permisos = new List<string> { "Perfil" }
+            Permisos = new List<string> { Permisos.AreaPerfil }
         })!;
 
-        // Usuarios: Ids 1 a 4
+        // Usuarios: Ids 1 a 4 (solo admin es administrador)
         Usuario admin = CrearUsuario(datos, "admin", "Alex", "Alumno", EmailAdmin, ClaveAdmin, administrador.Id, true);
         Usuario usuarioTester = CrearUsuario(datos, "tester", "Tere", "Tester", EmailTester, ClaveTester, tester.Id, true);
         CrearUsuario(datos, "invitado", "Iván", "Invitado", EmailInvitado, ClaveInvitado, invitado.Id, true);
         CrearUsuario(datos, "baja", "Bea", "Baja", EmailBaja, ClaveBaja, tester.Id, false);
+
+        admin.EsAdministrador = true;
+        admin.EstablecerTelefono(TelefonoAdmin, claveCifrado);
+        usuarioTester.EstablecerTelefono(TelefonoTester, claveCifrado);
 
         // Proyectos: Ids 1, 2 y 3 (el último inactivo)
         datos.GuardarProyecto(new Proyecto

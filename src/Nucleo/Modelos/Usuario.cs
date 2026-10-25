@@ -18,6 +18,12 @@ public class Usuario
     public bool Activo { get; set; } = true;
     public bool Activa { get => Activo; set => Activo = value; }
 
+    // usuario con privilegios de administración (acta del cliente)
+    public bool EsAdministrador { get; set; } = false;
+
+    // dato sensible: se guarda cifrado con AES-GCM, nunca en claro
+    public string TelefonoCifrado { get; set; } = string.Empty;
+
     // bloqueo por intentos fallidos
     public int IntentosFallidos { get; set; } = 0;
     public int IntentosErroneos { get => IntentosFallidos; set => IntentosFallidos = value; }
@@ -37,6 +43,22 @@ public class Usuario
         ResultadoHash datos = _servicioHash.Generar(contrasena);
         HashContrasena = datos.Hash;
         Sal = datos.Sal;
+    }
+
+    // guarda el teléfono cifrado; vacío lo borra
+    public void EstablecerTelefono(string telefono, string clave)
+    {
+        TelefonoCifrado = string.IsNullOrWhiteSpace(telefono)
+            ? string.Empty
+            : ServicioCifrado.Cifrar(telefono.Trim(), clave);
+    }
+
+    // devuelve el teléfono en claro o vacío si no tiene
+    public string ObtenerTelefono(string clave)
+    {
+        return string.IsNullOrEmpty(TelefonoCifrado)
+            ? string.Empty
+            : ServicioCifrado.Descifrar(TelefonoCifrado, clave);
     }
 
     // Compruebar si contraseña introducida es correcta

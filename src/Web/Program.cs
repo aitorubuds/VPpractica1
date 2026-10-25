@@ -1,11 +1,18 @@
 using Datos;
+using Nucleo.Seguridad;
+using www.Utilidades;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
+// Clave para cifrar datos sensibles: de la configuración o, si no hay, una nueva en cada arranque
+// (vale porque la base de datos también se crea de nuevo en cada arranque)
+string claveCifrado = builder.Configuration["Cifrado:Clave"] ?? ServicioCifrado.GenerarClave();
+builder.Services.AddSingleton(new ConfiguracionCifrado(claveCifrado));
+
 // Instancia única en memoria de la capa de datos, cargada con los datos de prueba
-builder.Services.AddSingleton<IDatos>(DatosPrueba.Crear());
+builder.Services.AddSingleton<IDatos>(DatosPrueba.Crear(claveCifrado));
 
 builder.Services.AddDistributedMemoryCache();
 

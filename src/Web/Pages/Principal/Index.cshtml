@@ -7,5 +7,9 @@
     ViewData["MostrarMenuUsuario"] = true;
     ViewData["NombreUsuario"] = Model.NombreUsuario;
 }
+@if (TempData["MensajeError"] is string mensajeError)
+{
+    <div id="mensajeError" class="alert alert-danger" role="alert">@mensajeError</div>
+}
 <h1 class="h3">Zona de trabajo </h1>
 <p> Contenido de la página principal. </p>

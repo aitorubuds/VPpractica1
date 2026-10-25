@@ -56,27 +56,54 @@ public class Index2Model : PageModel
 
         Usuario? usuario = _datos.LeerUsuario(EMail);
 
+        // Todos los intentos quedan auditados. Al usuario siempre se le da
+        // el mismo mensaje para no dar pistas de qué ha fallado.
         if (usuario is null)
         {
-            ModelState.AddModelError(
-                "Contraseña",
-                "Usuario o contraseña incorrectos.");
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.LoginFallido,
+                $"Intento de acceso con un email que no existe: {EMail}", null, EMail);
 
-            return Page();
+            return ErrorLogin();
+        }
+
+        if (usuario.Bloqueado)
+        {
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.CuentaBloqueada,
+                "Intento de acceso con la cuenta bloqueada", usuario);
+
+            return ErrorLogin();
+        }
+
+        if (!usuario.Activo)
+        {
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.CuentaInactiva,
+                "Intento de acceso con la cuenta dada de baja", usuario);
+
+            return ErrorLogin();
         }
 
         bool contraseñaCorrecta = usuario.CompruebaPassword(Contraseña);
 
         if (!contraseñaCorrecta)
         {
-            ModelState.AddModelError(
-                "Contraseña",
-                "Usuario o contraseña incorrectos.");
+            Auditoria.Registrar(_datos, Auditoria.NivelAviso, Auditoria.LoginFallido,
+                $"Contraseña incorrecta (intento {usuario.IntentosFallidos})", usuario);
 
-            return Page();
+            // Al tercer fallo ComprobarContrasena bloquea la cuenta
+            if (usuario.Bloqueado)
+            {
+                Auditoria.Registrar(_datos, Auditoria.NivelError, Auditoria.CuentaBloqueada,
+                    "Cuenta bloqueada tras 3 intentos fallidos", usuario);
+            }
+
+            return ErrorLogin();
         }
 
         // Usuario correctamente autenticado.
+        usuario.FechaUltimoAcceso = DateTime.Now;
+        Auditoria.Registrar(_datos, Auditoria.NivelInfo, Auditoria.LoginCorrecto,
+            "Inicio de sesión correcto", usuario);
+
         HttpContext.Session.Remove(
             ClavesSesion.EmailPendiente);
 
@@ -86,6 +113,15 @@ public class Index2Model : PageModel
 
         return RedirectToPage("/Principal/Index");
     }
+    private IActionResult ErrorLogin()
+    {
+        ModelState.AddModelError(
+            "Contraseña",
+            "Usuario o contraseña incorrectos.");
+
+        return Page();
+    }
+
     private string ObtenerEmailPendiente()
     {
         return HttpContext.Session.GetString(

@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nucleo.Modelos;
+using Nucleo.Seguridad;
 using Datos;
 using System.Linq;
 
@@ -10,11 +11,13 @@ namespace Nucleo.Tests.Datos;
 public class DatosPruebaTests
 {
     private global::Datos.Datos _datos = null!;
+    private string _clave = null!;
 
     [TestInitialize]
     public void Inicializar()
     {
-        _datos = DatosPrueba.Crear();
+        _clave = ServicioCifrado.GenerarClave();
+        _datos = DatosPrueba.Crear(_clave);
     }
 
     // 1. Se cargan el número de elementos esperado
@@ -85,7 +88,7 @@ public class DatosPruebaTests
         _datos.GuardarProyecto(new Proyecto { Nombre = "Nuevo" });
         _datos.LimpiarLog();
 
-        DatosPrueba.Cargar(_datos);
+        DatosPrueba.Cargar(_datos, _clave);
 
         Assert.AreEqual(DatosPrueba.NumUsuarios, _datos.Usuarios.Count);
         Assert.AreEqual(DatosPrueba.NumProyectos, _datos.Proyectos.Count);
@@ -102,5 +105,26 @@ public class DatosPruebaTests
 
         Assert.AreEqual(DatosPrueba.NumUsuarios + 1, _datos.GuardarUsuario(nuevo)!.Id);
         Assert.IsNull(_datos.GuardarUsuario(duplicado));
+    }
+
+    // 8. Solo admin es administrador
+    [TestMethod]
+    public void SoloAdmin_EsAdministrador()
+    {
+        Assert.AreEqual(1, _datos.Usuarios.Values.Count(u => u.EsAdministrador));
+        Assert.IsTrue(_datos.LeerUsuario(DatosPrueba.EmailAdmin)!.EsAdministrador);
+    }
+
+    // 9. Los teléfonos se guardan cifrados y se recuperan con la clave
+    [TestMethod]
+    [DataRow(DatosPrueba.EmailAdmin, DatosPrueba.TelefonoAdmin)]
+    [DataRow(DatosPrueba.EmailTester, DatosPrueba.TelefonoTester)]
+    public void Telefonos_GuardadosCifrados(string email, string telefono)
+    {
+        Usuario usuario = _datos.LeerUsuario(email)!;
+
+        Assert.AreNotEqual(telefono, usuario.TelefonoCifrado);
+        Assert.DoesNotContain(telefono, usuario.TelefonoCifrado);
+        Assert.AreEqual(telefono, usuario.ObtenerTelefono(_clave));
     }
 }
