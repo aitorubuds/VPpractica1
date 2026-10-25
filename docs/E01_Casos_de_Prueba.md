@@ -55,3 +55,4 @@ Prueba adicional, fuera del E01: `Extra_Verificar_ConObjetoResultadoHash` (sobre
 | DEF-01 | `ServicioHash` era `static`; el E01 define `public class ServicioHash` | No compilan las pruebas que crean `new ServicioHash()` |
 | DEF-02 | `Generar` lanzaba `ArgumentException` en vez de `InvalidOperationException` | CP-02, CP-03 (fallan 6 ejecuciones) |
 | DEF-03 | `Verificar(texto, ResultadoHash)` con `null` daba `NullReferenceException` | `Extra_Verificar_ConObjetoResultadoHash` |
+| DEF-05 | Crear un proyecto sin descripción fallaba (la web trataba la descripción como obligatoria) | UI-11 (Selenium, 3 navegadores) e IT-19 |

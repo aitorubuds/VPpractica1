@@ -25,19 +25,19 @@
             <div class="cabecera-usuario">
                 @if (mostrarMenuUsuario && !string.IsNullOrWhiteSpace(nombreUsuario)) {
                     <div class="dropdown">
-                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button type="button" id="btnMenuUsuario" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             @nombreUsuario
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li> <a class="dropdown-item" asp-page="/Usuarios/Perfil/Index"> Ver perfil </a> </li>
-                            <li> <a class="dropdown-item" asp-page="/Log/Index"> Log de eventos </a> </li>
-                            <li> <a class="dropdown-item" asp-page="/Proyectos/Seleccionar/index"> Seleccionar proyecto </a> </li>
+                            <li> <a id="lnkPerfil" class="dropdown-item" asp-page="/Usuarios/Perfil/Index"> Ver perfil </a> </li>
+                            <li> <a id="lnkLog" class="dropdown-item" asp-page="/Log/Index"> Log de eventos </a> </li>
+                            <li> <a id="lnkProyectos" class="dropdown-item" asp-page="/Proyectos/Seleccionar/index"> Seleccionar proyecto </a> </li>
                             <li> <hr class="dropdown-divider" /> </li>
                             <li>
                                 <form method="post" 
                                     asp-page="/Principal/Index"
                                     asp-page-handler="CerrarSesion">
-                                    <button type="submit" 
+                                    <button type="submit" id="btnCerrarSesion"
                                         class="dropdown-item"> Cerrar sesión </button>
                                 </form> 
                             </li> 

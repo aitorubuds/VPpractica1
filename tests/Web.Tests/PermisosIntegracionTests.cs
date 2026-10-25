@@ -188,4 +188,21 @@ public class PermisosIntegracionTests
         Assert.AreEqual(DatosPrueba.TelefonoAdmin,
             _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
+
+    // IT-19: la descripción es opcional, se puede crear un proyecto sin ella (DEF-05, lo encontró Selenium)
+    [TestMethod]
+    public async Task IT19_Admin_CreaProyectoSinDescripcion()
+    {
+        await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", new()
+        {
+            ["Nombre"] = "Sin descripción",
+            ["Siglas"] = "SDESC",
+            ["Descripcion"] = ""
+        });
+
+        Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
+        Assert.AreEqual(string.Empty, _web.Datos.Proyectos.Values.Single(p => p.Siglas == "SDESC").Descripcion);
+    }
 }

@@ -88,7 +88,8 @@ public class IndexModel : PageModel
         ErrorMessage =
             "La descripción no puede superar 500 caracteres.")]
     [Display(Name = "Descripción")]
-    public string Descripcion
+    // Opcional: con string (no anulable) ASP.NET la trataba como obligatoria (DEF-05)
+    public string? Descripcion
     {
         get;
         set;
@@ -179,7 +180,7 @@ public class IndexModel : PageModel
             IdProyecto = -1,
             Nombre = nombreNormalizado,
             Siglas = siglasNormalizadas,
-            Descripcion = Descripcion.Trim(),
+            Descripcion = Descripcion?.Trim() ?? string.Empty,
             FechaCreacion = DateTime.Now,
 
             // Activo significa que el proyecto está disponible.
