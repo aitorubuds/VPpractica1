@@ -60,7 +60,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - `Generar(null)` $\to$ lanza excepción.
     - `Generar("")` $\to$ lanza excepción.
     - `Generar("   ")` $\to$ lanza excepción.
-  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsException<ArgumentException>`.
+  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsExactly<InvalidOperationException>`.
 
 - [X] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
   - Implementar las especificaciones ED-05 a ED-20 en `ServicioHashTests.cs`:

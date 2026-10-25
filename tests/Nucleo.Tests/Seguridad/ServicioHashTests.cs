@@ -7,13 +7,21 @@ namespace Nucleo.Tests.Seguridad;
 [TestClass]
 public class ServicioHashTests
 {
+    private ServicioHash _servicio = null!;
+
+    [TestInitialize]
+    public void Inicializar()
+    {
+        _servicio = new ServicioHash();
+    }
+
     // Generar con un texto normal debe devolver hash y sal válidos
     [TestMethod]
     public void Generar_TextoValido()
     {
         string texto = "MiPassword123";
 
-        ResultadoHash resultado = ServicioHash.Generar(texto);
+        ResultadoHash resultado = _servicio.Generar(texto);
 
         Assert.IsNotNull(resultado);
         Assert.IsFalse(string.IsNullOrEmpty(resultado.Hash));
@@ -24,21 +32,21 @@ public class ServicioHashTests
     [TestMethod]
     public void Generar_TextoNulo()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar(null!));
+        Assert.ThrowsExactly<InvalidOperationException>(() => _servicio.Generar(null));
     }
 
     // Si el texto está vacío debe saltar excepción
     [TestMethod]
     public void Generar_TextoVacio()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar(""));
+        Assert.ThrowsExactly<InvalidOperationException>(() => _servicio.Generar(""));
     }
 
     // Si solo son espacios en blanco también debe saltar excepción
     [TestMethod]
     public void Generar_SoloEspacios()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioHash.Generar("   "));
+        Assert.ThrowsExactly<InvalidOperationException>(() => _servicio.Generar("   "));
     }
 
     // Si generamos dos veces con el mismo texto, las sales y hashes tienen que ser distintos
@@ -47,8 +55,8 @@ public class ServicioHashTests
     {
         string texto = "MismaContrasena";
 
-        ResultadoHash resultado1 = ServicioHash.Generar(texto);
-        ResultadoHash resultado2 = ServicioHash.Generar(texto);
+        ResultadoHash resultado1 = _servicio.Generar(texto);
+        ResultadoHash resultado2 = _servicio.Generar(texto);
 
         // Comprobamos que no se repitan
         Assert.AreNotEqual(resultado1.Sal, resultado2.Sal);
@@ -60,9 +68,9 @@ public class ServicioHashTests
     public void Verificar_Correcto()
     {
         string texto = "ClaveSecreta123";
-        ResultadoHash datos = ServicioHash.Generar(texto);
+        ResultadoHash datos = _servicio.Generar(texto);
 
-        bool valido = ServicioHash.Verificar(texto, datos.Hash, datos.Sal);
+        bool valido = _servicio.Verificar(texto, datos.Hash, datos.Sal);
 
         Assert.IsTrue(valido);
     }
@@ -73,9 +81,9 @@ public class ServicioHashTests
     {
         string textoReal = "ClaveCorrecta";
         string textoFalso = "ClaveErronea";
-        ResultadoHash datos = ServicioHash.Generar(textoReal);
+        ResultadoHash datos = _servicio.Generar(textoReal);
 
-        bool valido = ServicioHash.Verificar(textoFalso, datos.Hash, datos.Sal);
+        bool valido = _servicio.Verificar(textoFalso, datos.Hash, datos.Sal);
 
         Assert.IsFalse(valido);
     }
@@ -84,11 +92,11 @@ public class ServicioHashTests
     [TestMethod]
     public void Verificar_ParametrosVacios()
     {
-        ResultadoHash datos = ServicioHash.Generar("CualquierCosa");
+        ResultadoHash datos = _servicio.Generar("CualquierCosa");
 
-        Assert.IsFalse(ServicioHash.Verificar("", datos.Hash, datos.Sal));
-        Assert.IsFalse(ServicioHash.Verificar("CualquierCosa", "", datos.Sal));
-        Assert.IsFalse(ServicioHash.Verificar("CualquierCosa", datos.Hash, ""));
+        Assert.IsFalse(_servicio.Verificar("", datos.Hash, datos.Sal));
+        Assert.IsFalse(_servicio.Verificar("CualquierCosa", "", datos.Sal));
+        Assert.IsFalse(_servicio.Verificar("CualquierCosa", datos.Hash, ""));
     }
 
     // Si el hash o la sal están corruptos no debe petar, solo dar false
@@ -96,10 +104,10 @@ public class ServicioHashTests
     public void Verificar_HashCorrupto()
     {
         string texto = "MiTexto";
-        ResultadoHash datos = ServicioHash.Generar(texto);
+        ResultadoHash datos = _servicio.Generar(texto);
 
         // Le metemos un hash con formato no válido
-        bool resultado = ServicioHash.Verificar(texto, "no-es-un-hash-valido!!!", datos.Sal);
+        bool resultado = _servicio.Verificar(texto, "no-es-un-hash-valido!!!", datos.Sal);
 
         Assert.IsFalse(resultado);
     }
@@ -109,10 +117,10 @@ public class ServicioHashTests
     public void Verificar_ConObjetoResultadoHash()
     {
         string texto = "ClaveSecreta123";
-        ResultadoHash datos = ServicioHash.Generar(texto);
+        ResultadoHash datos = _servicio.Generar(texto);
 
         // Probamos que funcione con el objeto directo tanto acierto como fallo
-        Assert.IsTrue(ServicioHash.Verificar(texto, datos));
-        Assert.IsFalse(ServicioHash.Verificar("ClaveIncorrecta", datos));
+        Assert.IsTrue(_servicio.Verificar(texto, datos));
+        Assert.IsFalse(_servicio.Verificar("ClaveIncorrecta", datos));
     }
 }

@@ -4,6 +4,8 @@ namespace Nucleo.Modelos;
 
 public class Usuario
 {
+    private static readonly ServicioHash _servicioHash = new();
+
     public int Id { get; set; } = -1;
     public int IdUsuario { get => Id; set => Id = value; }
     public string Cuenta { get; set; } = string.Empty;
@@ -32,7 +34,7 @@ public class Usuario
     // asignar la contraseña por primera vez
     public void EstablecerContrasena(string contrasena)
     {
-        ResultadoHash datos = ServicioHash.Generar(contrasena);
+        ResultadoHash datos = _servicioHash.Generar(contrasena);
         HashContrasena = datos.Hash;
         Sal = datos.Sal;
     }
@@ -47,7 +49,7 @@ public class Usuario
         }
 
         // Comprobamos el hash con la sal guardada
-        bool esCorrecta = ServicioHash.Verificar(contrasena, HashContrasena, Sal);
+        bool esCorrecta = _servicioHash.Verificar(contrasena, HashContrasena, Sal);
 
         if (esCorrecta)
         {
@@ -80,7 +82,7 @@ public class Usuario
         }
 
         // 1. Comprobar que sabe la contraseña vieja
-        bool claveActualOk = ServicioHash.Verificar(contrasenaActual, HashContrasena, Sal);
+        bool claveActualOk = _servicioHash.Verificar(contrasenaActual, HashContrasena, Sal);
         if (!claveActualOk)
         {
             return false;
@@ -94,7 +96,7 @@ public class Usuario
         }
 
         // 3. Si todo está bien, generamos el nuevo hash y guardamos
-        ResultadoHash nuevoHash = ServicioHash.Generar(nuevaContrasena);
+        ResultadoHash nuevoHash = _servicioHash.Generar(nuevaContrasena);
         HashContrasena = nuevoHash.Hash;
         Sal = nuevoHash.Sal;
 
