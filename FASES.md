@@ -1,36 +1,52 @@
-# Plan de Trabajo en 20 Fases: UBU_TPMP
+# Plan de Trabajo Oficial: UBU_TPMP (Alineado con AT1 y PR1B-W)
 
 > **Proyecto:** UBU_TPMP (UBUTestProjectManagementPlatform)  
-> **Asignatura:** Validación y Pruebas — Universidad de Burgos  
+> **Asignatura:** Validación y Pruebas (6376 / 8828) — Universidad de Burgos  
 > **Fecha Límite:** 28 de octubre de 2026 (23:59 h)  
 > **Defensa Presencial:** 07 al 14 de noviembre de 2026  
+> **Objetivo de Calificación:** 10,00 / 10,00 pts (+ 0,50 pts extra)
 
-Este documento sirve como lista de control (*checklist*) operativa para el seguimiento del desarrollo y de las pruebas. Conforme completes cada hito, marca la casilla correspondiente `[X]` y actualiza la tarjeta correspondiente en Microsoft Planner.
+Este documento sirve como lista de control (*checklist*) operativa del equipo (Alex & Aitor), sincronizada estrictamente con los criterios de evaluación de **`AT1`**, el enunciado **`PR1`** y la guía web **`PR1B-W`**.
 
 ---
 
-## Bloque I: Configuración del Entorno y Solución .NET (Fases 1 - 4)
+## Desglose de Puntuación Oficial (`AT1`)
+
+| Bloque Evaluado | Puntos Máx. | Criterios Específicos |
+| :--- | :---: | :--- |
+| **Documentación Técnica** | **3,00 pts** | Formato (0,25) · Plan de pruebas (0,50) · Requisitos (0,75) · Modelos UML (0,50) · Definición detallada de Casos de Prueba con datos/pasos/resultados (1,00) |
+| **Pruebas Unitarias** | **1,00 pts** | Baterías MSTest sobre lógica de negocio, caja blanca y caja negra (100% de éxito) |
+| **Pruebas de Integración** | **1,00 pts** | Verificación de interacción entre capas (Dominio, Datos en memoria y Web) |
+| **Aceptación / Validación Web** | **1,50 pts** | Automatización C# + MSTest + **Selenium WebDriver** con **Google Chrome** |
+| **Automatización con Katalon** | **1,50 pts** | Suites y casos grabados con **Katalon Recorder** y exportados en ZIP |
+| **Recubrimiento de Código** | **1,00 pts** | Análisis de cobertura ($\ge 90\%$, actualmente **100%**) e identificación de puntos débiles |
+| **Defensa Oral** | **1,00 pts** | Dominio de requisitos, diseño de pruebas y justificación técnica ante el profesor |
+| **Aspectos Adicionales** | **0,50 pts** | Subida de nota (Bootstrap local, datos semilla de prueba, defensas adicionales) |
+
+---
+
+## Bloque I: Configuración del Entorno .NET 10 (Fases 1 - 4)
 
 - [X] **Fase 01 — Creación de la Solución Visual Studio**
   - Crear el archivo de solución `TestProjectManagementPlatform.sln` en la raíz de `VPpractica1`.
   - Configurar las carpetas de solución (`src/` y `tests/`).
-  - *Criterio de éxito:* Se puede abrir la solución haciendo doble clic en `.sln` desde Visual Studio.
+  - *Criterio de éxito:* Apertura limpia de la solución en Visual Studio Community 2026.
 
 - [X] **Fase 02 — Regularización de la Capa de Datos (`src/Datos`)**
-  - Mover/incorporar `IDatos.cs` con el namespace `Datos`.
+  - Incorporar `IDatos.cs` con el namespace `Datos`.
   - Crear `src/Datos/Datos.csproj` configurado para `net10.0` con referencia a `Nucleo`.
   - *Criterio de éxito:* El proyecto `Datos` compila sin errores de tipos o referencias.
 
 - [X] **Fase 03 — Creación del Proyecto de Pruebas Unitarias (`tests/Nucleo.Tests`)**
-  - Crear la carpeta `tests/Nucleo.Tests/`.
-  - Crear `Nucleo.Tests.csproj` con `MSTest.Sdk` (4.5.1) sobre `net10.0` y `global.json` con Microsoft.Testing.Platform (cobertura con `dotnet test --coverage`).
+  - Crear `tests/Nucleo.Tests/Nucleo.Tests.csproj` con `MSTest.Sdk` (4.5.1) sobre `net10.0`.
+  - Configurar `global.json` con `Microsoft.Testing.Platform` y cobertura nativa (`dotnet test --coverage`).
   - Referenciar `src/Nucleo/Nucleo.csproj` y `src/Datos/Datos.csproj`.
-  - *Criterio de éxito:* El Explorador de Pruebas de Visual Studio detecta el proyecto.
+  - *Criterio de éxito:* El Explorador de Pruebas de Visual Studio detecta y ejecuta el proyecto.
 
 - [X] **Fase 04 — Enlace de Proyectos y Primera Compilación Limpia**
-  - Añadir todos los proyectos (`Nucleo`, `Datos`, `Web`, `Nucleo.Tests`) al archivo `.sln`.
-  - Ejecutar compilación completa de la solución.
-  - *Criterio de éxito:* `dotnet build` completa con 0 errores y 0 advertencias críticas.
+  - Añadir todos los proyectos (`Nucleo`, `Datos`, `Web`, `Nucleo.Tests`) a la solución.
+  - Ejecutar compilación completa en `.NET 10`.
+  - *Criterio de éxito:* `dotnet build` completa con 0 errores.
 
 ---
 
@@ -38,161 +54,142 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [X] **Fase 05 — Verificación de Servicios Criptográficos en `Nucleo`**
   - Revisar que `ServicioHash.cs`, `ResultadoHash.cs`, `ServicioCifrado.cs` y `ServicioContrasenas.cs` compilan en `Nucleo/Seguridad/`.
-  - Comprobar que no hay dependencias circulares ni código incompleto.
-  - *Criterio de éxito:* Las 4 clases compilan y sus métodos públicos están disponibles para `Nucleo.Tests`.
+  - *Criterio de éxito:* Clases operativas y disponibles para `Nucleo.Tests`.
 
 - [X] **Fase 06 — Pruebas de Caja Blanca de `ServicioContrasenas`**
   - Crear `tests/Nucleo.Tests/Seguridad/ServicioContrasenasTests.cs`.
-  - Implementar mínimo 8 casos de prueba para cubrir el 100% de la complejidad ciclomática:
-    1. Contraseña válida completa.
-    2. Longitud < 8 caracteres.
-    3. Sin mayúsculas.
-    4. Sin minúsculas.
-    5. Sin números.
-    6. Sin caracteres especiales / símbolos.
-    7. Nula o vacía.
-    8. Con espacios en blanco.
-  - *Criterio de éxito:* 8 tests pasan en verde (PASS) y la cobertura en `ServicioContrasenas` es del 100%.
+  - Implementar 8 casos de prueba cubriendo el 100% de la complejidad ciclomática ($V(G)=8$).
+  - *Criterio de éxito:* 8 tests en verde y 100% de recubrimiento en `ServicioContrasenas`.
 
-- [X] **Fase 07 — Pruebas de Caja Negra de `ServicioHash` (Parte 1: Entradas Inválidas)**
-  - Crear `tests/Nucleo.Tests/Seguridad/ServicioHashTests.cs`.
-  - Implementar las pruebas para las especificaciones ED-01 a ED-04:
-    - `Generar(null)` $\to$ lanza excepción.
-    - `Generar("")` $\to$ lanza excepción.
-    - `Generar("   ")` $\to$ lanza excepción.
-  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsExactly<InvalidOperationException>`.
+- [X] **Fase 07 — Pruebas de Caja Negra de `ServicioHash` (Conforme a E01)**
+  - Implementar `ServicioHash` como clase de instancia con parámetros `string?` y lanzamiento de `InvalidOperationException` ante entradas nulas o vacías según `E01`.
+  - Crear `tests/Nucleo.Tests/Seguridad/ServicioHashTests.cs` (CP-01 a CP-20, cubriendo ED-01 a ED-20 con 78 ejecuciones).
+  - Crear `tests/Nucleo.Tests/Seguridad/ResultadoHashTests.cs` (ED-18 a ED-20).
+  - Documentar la matriz de casos de prueba en `docs/E01_Casos_de_Prueba.md`.
+  - *Criterio de éxito:* 100% de cobertura y aserciones en verde en `ServicioHash`.
 
-- [X] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
-  - Implementar las especificaciones ED-05 a ED-20 en `ServicioHashTests.cs`:
-    - `Generar`: devuelve `ResultadoHash` válido, no nulo.
-    - Dos ejecuciones sucesivas con el mismo texto generan `Sal` distinta y `Hash` distinto (unicidad y variabilidad).
-    - `Verificar`: devuelve `true` con texto, hash y sal legítimos.
-    - `Verificar`: devuelve `false` con texto erróneo, hash corrupto, sal corrupta o argumentos nulos/vacíos.
-    - `Verificar`: robustez absoluta ante datos malformados (no propaga excepciones no controladas).
-  - Tabla de casos CP-01 a CP-20 en `docs/E01_Casos_de_Prueba.md` (más `ResultadoHashTests.cs` para ED-18 a ED-20).
-  - *Criterio de éxito:* Batería completa de caja negra pasa al 100% en verde y `ServicioHash` con 100% de cobertura.
+- [X] **Fase 08 — Pruebas de `ServicioCifrado` y `Formatos`**
+  - Crear `tests/Nucleo.Tests/Seguridad/ServicioCifradoTests.cs` (cifrado/descifrado AES-GCM con claves de 256 bits y manejo de excepciones).
+  - Crear `tests/Nucleo.Tests/Servicios/FormatosTests.cs` para el formateo de fechas.
+  - *Criterio de éxito:* 100% de cobertura en todos los servicios auxiliares de `Nucleo`.
 
 ---
 
-## Bloque III: Modelo `Usuario` y Funcionalidad de Grupo (Fases 9 - 11)
+## Bloque III: Modelo de Dominio y Funcionalidad de Grupo (Fases 9 - 11)
 
 - [X] **Fase 09 — Diseño de la Funcionalidad Exclusiva de Grupo**
-  - Acordar y documentar la funcionalidad adicional de seguridad de `Usuario.cs`:
-    - *Opción elegida:* Bloqueo de cuenta tras 3 intentos fallidos consecutivos de contraseña, reseteo del contador tras autenticación exitosa y método administrativo de desbloqueo.
-  - Definir las propiedades en `Usuario`: `IntentosFallidos`, `Bloqueado`.
-  - *Criterio de éxito:* Especificación funcional aprobada para codificar.
+  - *Opción elegida:* Bloqueo automático de cuenta tras 3 intentos fallidos consecutivos de contraseña, reseteo tras login exitoso y desbloqueo administrativo.
+  - Propiedades en `Usuario`: `IntentosFallidos` (`IntentosErroneos`), `Bloqueado`, `Activo` (`Activa`), `FechaUltimoAcceso`, etc.
+  - *Criterio de éxito:* Especificación aprobada y documentada.
 
 - [X] **Fase 10 — Implementación Segura de `Usuario.cs`**
-  - Encapsular las propiedades sensibles: la contraseña en texto plano nunca se expone.
-  - Implementar `bool ComprobarContrasena(string contrasena)`:
-    - Si la cuenta está bloqueada, retorna `false`.
-    - Si la contraseña es correcta, reinicia `IntentosFallidos = 0` y retorna `true`.
-    - Si es incorrecta, incrementa `IntentosFallidos`; si llega a 3, marca `Bloqueado = true` y retorna `false`.
-  - Implementar `bool CambiarContrasena(string contrasenaActual, string nuevaContrasena)`:
-    - Verifica la contraseña actual.
-    - Comprueba complejidad con `ServicioContrasenas.EsValida`.
-    - Genera nuevo hash y sal con `ServicioHash.Generar` y actualiza.
-  - Implementar `void Desbloquear()`.
-  - *Criterio de éxito:* `Usuario.cs` compila y satisface los requisitos de seguridad y la funcionalidad de grupo.
+  - Métodos `ComprobarContrasena(string)`, `CambiarContrasena(string, string)` y `Desbloquear()`.
+  - Alias de compatibilidad web: `CompruebaPassword` y `CambiaPassword`.
+  - *Criterio de éxito:* La contraseña en texto plano nunca se expone y la seguridad está encapsulada.
 
-- [X] **Fase 11 — Batería de Pruebas Unitarias de `Usuario`**
+- [X] **Fase 11 — Pruebas Unitarias de `Usuario`**
   - Crear `tests/Nucleo.Tests/Modelos/UsuarioTests.cs`.
-  - Pruebas para:
-    - Comprobación exitosa y fallida de contraseña.
-    - Cambio de contraseña válido e inválido (clave actual errónea o nueva clave sin complejidad).
-    - Bloqueo automático al tercer intento fallido consecutivo.
-    - Rechazo de acceso cuando el usuario está bloqueado incluso con contraseña correcta.
-    - Desbloqueo de cuenta por método administrativo.
-  - *Criterio de éxito:* Todos los tests pasan y cubren el 98% de la lógica de `Usuario`.
+  - Pruebas de comprobación, bloqueo a los 3 fallos, rechazo de acceso bloqueado y desbloqueo.
+  - *Criterio de éxito:* 100% de cobertura en `Usuario.cs`.
 
 ---
 
 ## Bloque IV: Capa de Persistencia en Memoria (`Datos`) (Fases 12 - 13)
 
-- [X] **Fase 12 — Consolidación de `Datos.cs`**
-  - Verificar la lógica de asignación autoincremental de identificadores:
-    - Si `Id < 0` $\to$ asigna `++_ultimoId` e inserta.
-    - Si `Id >= 0` y existe $\to$ actualiza la entidad; si no existe $\to$ devuelve `null`.
-  - Verificar operaciones CRUD de `Usuario`, `Rol`, `Proyecto` y registro de `EntradaLog`.
-  - Verificar que `Reiniciar()` vacía todas las colecciones y restablece los contadores a 0.
-  - *Criterio de éxito:* `Datos.cs` listo para pruebas sin persistencia real.
+- [X] **Fase 12 — Consolidación de `Datos.cs` (Encapsulación y Consistencia)**
+  - Retorno de copias defensivas en `Usuarios`, `Roles`, `Proyectos` y `Logs` para evitar corrupción externa.
+  - Control de consistencia: email único sin distinguir mayúsculas, desasignación en cascada de proyectos al borrar usuario, reseteo de roles y preservación de auditoría en log.
+  - Creación de `src/Datos/DatosPrueba.cs` con estado inicial conocido (4 usuarios, 3 roles, 3 proyectos, 2 logs).
+  - *Criterio de éxito:* Repositorio robusto y protegido contra efectos colaterales.
 
-- [X] **Fase 13 — Pruebas Unitarias de `Datos.cs`**
-  - Crear `tests/Nucleo.Tests/Datos/DatosTests.cs`.
-  - Incorporar método anotado con `[TestInitialize]` que invoque `_datos.Reiniciar()`.
-  - Pruebas para:
-    - Inserción y auto-asignación de ID positivo.
-    - Actualización de entidad existente.
-    - Búsqueda por ID existente y por ID inexistente (debe devolver `null`).
-    - Búsqueda de usuario por correo.
-    - Borrado de entidades existentes y no existentes.
-    - Registro de logs y limpieza de auditoría (`LimpiarLog()`).
-    - Comprobación de restablecimiento total con `Reiniciar()`.
-  - *Criterio de éxito:* Todos los casos de prueba de datos pasan en verde (cobertura 98.8%).
+- [X] **Fase 13 — Pruebas Unitarias y Escenarios de Error de `Datos.cs`**
+  - Crear `tests/Nucleo.Tests/Datos/DatosTests.cs` (33 pruebas: 11 escenarios base de `PR1B` + 22 escenarios de error).
+  - Crear `tests/Nucleo.Tests/Datos/DatosPruebaTests.cs`.
+  - *Criterio de éxito:* 100% de líneas y ramas cubiertas en la capa de datos.
 
 ---
 
 ## Bloque V: Cobertura de Código e Integración (Fases 14 - 15)
 
 - [X] **Fase 14 — Pruebas de Integración entre Capas**
-  - Crear `tests/Nucleo.Tests/Integracion/IntegracionTests.cs`.
-  - Probar el ciclo completo del sistema:
-    1. Creación de un usuario con contraseña segura.
-    2. Guardado en `Datos` con asignación de ID.
-    3. Simulación de 3 intentos fallidos de login $\to$ verificar bloqueo en persistencia.
-    4. Registro automático de la auditoría en `EntradaLog`.
-    5. Desbloqueo y cambio de contraseña exitoso.
-  - *Criterio de éxito:* Flujo integral superado con aserciones en todas las capas.
+  - En `tests/Nucleo.Tests/Integracion/IntegracionTests.cs`:
+    - `Flujo_RegistroYLogin`: ciclo completo entre `Usuario` y `Datos`.
+    - `Flujo_BloqueoYCambioClave`: ciclo de 3 intentos erróneos, bloqueo en repositorio, desbloqueo y cambio seguro.
+  - *Criterio de éxito:* Integración validada end-to-end con aserciones en todas las capas.
 
-- [X] **Fase 15 — Auditoría y Verificación de Cobertura ($\ge 90\%$)**
-  - En Visual Studio: Menú `Prueba` $\to$ `Analizar cobertura de código para todas las pruebas`.
-  - Verificar que el recubrimiento de líneas y ramas en la librería `Nucleo` supera el **90%** (requisito del profesor para la máxima nota).
-  - Identificar líneas o ramas no cubiertas y añadir los casos de prueba necesarios.
-  - Documentar el análisis y lo insuficientemente probado en `docs/Analisis_Cobertura.md`.
-  - *Criterio de éxito:* Cobertura medida el 25/10: **100 %** de líneas y ramas en `Nucleo` y `Datos` (154 pruebas).
+- [X] **Fase 15 — Auditoría y Verificación de Cobertura Total**
+  - Ejecución con `dotnet test --coverage` en Visual Studio.
+  - Redacción del informe formal en `docs/Analisis_Cobertura.md`.
+  - *Criterio de éxito:* **154 de 154 pruebas superadas (0 fallos)** con **100% de cobertura** en `Nucleo` y `Datos`.
 
 ---
 
-## Bloque VI: Aplicación Web ASP.NET Core (Fases 16 - 17)
+## Bloque VI: Aplicación Web ASP.NET Core Razor Pages (Fases 16 - 17)
 
-- [X] **Fase 16 — Configuración Web e Inyección de Dependencias**
-  - Configurar `Program.cs` en `src/Web/`:
-    - Registrar `IDatos` como Singleton en memoria.
-    - Cargar los datos de prueba con `DatosPrueba.Crear()` (`src/Datos/DatosPrueba.cs`): estado conocido de 4 usuarios, 3 roles, 3 proyectos y 2 logs.
-  - *Criterio de éxito:* La aplicación web arranca en local (`dotnet run` o F5 en Visual Studio).
+- [X] **Fase 16 — Configuración del Pipeline Web e Inyección de Dependencias**
+  - Configurar `src/Web/Program.cs`: Razor Pages, sesiones HTTP en memoria y singleton `IDatos` cargado con `DatosPrueba.Crear()`.
+  - Incorporar Bootstrap 5.3.8 local en `wwwroot/lib/bootstrap/dist/css/bootstrap.css`.
+  - Crear `_ViewImports.cshtml` y `_ViewStart.cshtml` para habilitar TagHelpers, tokens CSRF y layout compartido.
+  - *Criterio de éxito:* La web compila sin advertencias y arranca en local (`F5`).
 
-- [X] **Fase 17 — Vistas y Flujos Web de Usabilidad**
-  - Integrar las plantillas Razor Pages oficiales del profesor:
-    - Redirección de inicio a login (`Pages/Index.cshtml`).
-    - Flujo de login en dos pasos (`Pages/Login/Index.cshtml` e `Index2.cshtml`).
-    - Listado, alta y selección de proyectos (`Pages/Proyectos/Seleccionar/Index.cshtml`).
-    - Perfil de usuario y cambio seguro de contraseña (`Pages/Usuarios/Perfil/Index.cshtml`).
-    - Auditoría y consulta de registros de eventos (`Pages/Log/Index.cshtml`).
-  - *Criterio de éxito:* La interfaz compila sin errores y queda totalmente vinculada a la capa `Datos` y `Nucleo`.
+- [X] **Fase 17 — Vistas y Flujos Web Funcionales**
+  - Login en dos pasos: `Pages/Login/Index.cshtml` (Email) e `Index2.cshtml` (Password).
+  - Selección y alta de proyectos: `Pages/Proyectos/Seleccionar/Index.cshtml`.
+  - Perfil de usuario y cambio de contraseña: `Pages/Usuarios/Perfil/Index.cshtml`.
+  - Visor de auditoría: `Pages/Log/Index.cshtml`.
+  - Protección de sesión: redirección automática a `/Login/Index` si no hay sesión activa.
+  - *Criterio de éxito:* Navegación fluida y 0 errores en consola.
 
 ---
 
-## Bloque VII: Documentación, Trazabilidad y Entrega (Fases 18 - 20)
+## Bloque VII: Aceptación Web y Automatización (Fases 18 - 19) — [PENDIENTE]
 
-- [ ] **Fase 18 — Configuración Final del Tablero Kanban en Microsoft Planner**
-  - Crear el tablero `DniAlumno1-DniAlumno2` en Microsoft Planner.
-  - Crear los 4 depósitos (*Por hacer*, *En progreso*, *En pruebas*, *Completado*).
-  - Asignar miembros y registrar fechas reales de ejecución.
-  - Asegurar el acceso compartido al profesor Pedro Renedo (`prenedo@ubu.es`).
-  - *Criterio de éxito:* Tablero completamente estructurado y con actividad registrada.
+- [ ] **Fase 18 — Pruebas de Aceptación con C#, MSTest y Selenium WebDriver (1,50 pts)**
+  - Crear el proyecto de pruebas de aceptación web (o suite Selenium con ChromeDriver).
+  - Automatizar los escenarios clave:
+    1. Login exitoso con credenciales válidas y redirección a Principal.
+    2. Login fallido por contraseña incorrecta y visualización de mensaje de error.
+    3. Bloqueo de cuenta tras 3 intentos sucesivos desde el navegador.
+    4. Navegación a Proyectos, creación de un nuevo proyecto y selección en sesión.
+    5. Cierre de sesión y verificación de redirección protegida.
+  - *Criterio de éxito:* Pruebas ejecutadas automáticamente sobre Google Chrome en verde.
 
-- [ ] **Fase 19 — Matriz de Trazabilidad y Modelado UML**
-  - Elaborar la tabla de trazabilidad completa:
-    $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow \text{Requisitos / HU (RE)} \longrightarrow \text{Criterios Aceptación (CA)} \longrightarrow \text{Casos de Prueba (CP)}$$
-  - Generar los diagramas UML (formato estándar, recordando no incluir diagramas E-R):
-    - Diagrama de Paquetes de alto nivel.
-    - Diagrama de Clases de diseño (incluyendo clases de pruebas unitarias).
-    - Diagrama de Casos de Uso.
-  - *Criterio de éxito:* Trazabilidad sin huecos y modelos UML coherentes con el código.
+- [ ] **Fase 19 — Pruebas Automatizadas con Katalon Recorder (1,50 pts)**
+  - Instalar la extensión Katalon Recorder en Chrome/Edge.
+  - Grabar la suite de pruebas sobre `https://localhost:51612`:
+    - Comandos: `open`, `type`, `click`, `assertText`, `verifyElementPresent`.
+  - Ejecutar la suite completa y verificar resultado en verde.
+  - Exportar el conjunto de pruebas en formato HTML/ZIP para el entregable.
+  - *Criterio de éxito:* Archivo `Katalon_Recorder_Suites.zip` generado y listo.
 
-- [ ] **Fase 20 — Memoria PDF, Empaquetado en ZIP y Preparación de la Defensa**
-  - Redactar la memoria final en PDF integrando todos los apartados (a - f) con capturas de Planner y de cobertura de Visual Studio.
-  - Limpiar la solución (`bin/` y `obj/`) para no exceder el tamaño límite de UBUVirtual.
-  - Comprimir todo en un único fichero `DniAlumno1-DniAlumno2.zip`.
-  - Ensayar la ejecución de las pruebas y la apertura de cobertura en Visual Studio de cara a la defensa del 07 al 14 de noviembre.
-  - *Criterio de éxito:* Archivo ZIP validado, dentro del límite de peso y listo para entregar antes del 28 de octubre.
+---
+
+## Bloque VIII: Documentación, Trazabilidad y Entrega Final (Fases 20 - 22) — [PENDIENTE]
+
+- [ ] **Fase 20 — Configuración Final de Microsoft Planner (Apartado a)**
+  - Tablero nombrado obligatoriamente: `[DniAlumno1]-[DniAlumno2]`.
+  - Los 4 depósitos estructurados: *Por hacer*, *En progreso*, *En pruebas*, *Completado*.
+  - Tarjetas con responsables asignados (Alex y Aitor), fechas reales y etiquetas.
+  - Invitar al profesor Pedro Renedo (`prenedo@ubu.es`).
+  - *Criterio de éxito:* Captura 1 lista para la memoria.
+
+- [ ] **Fase 21 — Plan de Pruebas, Trazabilidad Completa y Modelado UML (Apartados b - e)**
+  - Redactar el **Plan de pruebas formal** (0,50 pts): alcance, tipos, herramientas y criterios.
+  - Tablas formales del Apartado b:
+    - Tabla de Actores.
+    - Tabla de Casos de Uso.
+    - Tabla de Requisitos / Historias de Usuario.
+    - Tabla de Criterios de Aceptación.
+    - **Tabla de Casos de Prueba con atributos, condiciones, datos, acciones y resultados esperados** (1,00 pt).
+  - Diagramas UML (0,50 pts): Paquetes, Clases de diseño (con clases de test), Casos de Uso y Secuencia.
+  - *Criterio de éxito:* Trazabilidad total sin fisuras y 0 diagramas E-R.
+
+- [ ] **Fase 22 — Memoria PDF Final y Empaquetado del Triple Entregable**
+  - Compilar la memoria técnica a PDF con el formato institucional UBU y las 8 capturas incrustadas.
+  - Limpieza rigurosa de la solución (`bin/`, `obj/`, `.vs/`, `.idea/`, temporales).
+  - Empaquetar el archivo único **`[DniAlumno1]-[DniAlumno2].zip`** con:
+    1. `Memoria_[Dni1]-[Dni2].pdf`
+    2. `Proyecto_Visual_Studio.zip` (Solución limpia en .NET 10)
+    3. `Katalon_Recorder_Suites.zip`
+  - Validar descompresión y compilación en una carpeta limpia.
+  - *Criterio de éxito:* Entrega completada en UBUVirtual antes del 28/10 a las 23:59.
