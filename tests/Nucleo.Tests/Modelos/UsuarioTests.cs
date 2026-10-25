@@ -144,4 +144,65 @@ public class UsuarioTests
 
         Assert.IsFalse(cambioOk);
     }
+
+    // Los alias que usa la web del profesor hacen lo mismo que los métodos originales
+    [TestMethod]
+    public void Alias_FuncionanIgual()
+    {
+        Usuario u = CrearUsuarioPrueba();
+        u.IdUsuario = 7;
+        u.Activa = false;
+        u.IntentosErroneos = 2;
+
+        Assert.AreEqual(7, u.Id);
+        Assert.IsFalse(u.Activo);
+        Assert.AreEqual(2, u.IntentosFallidos);
+
+        u.Activa = true;
+        Assert.IsTrue(u.CompruebaPassword("ContraseñaSegura123!"));
+        Assert.IsTrue(u.CambiaPassword("ContraseñaSegura123!", "NuevaClaveSuperSegura456!"));
+        Assert.IsTrue(u.ComprobarContrasena("NuevaClaveSuperSegura456!"));
+    }
+
+    // Un usuario inactivo no entra aunque la contraseña sea buena
+    [TestMethod]
+    public void Comprobar_Inactivo_NoEntra()
+    {
+        Usuario u = CrearUsuarioPrueba();
+        u.Activo = false;
+
+        Assert.IsFalse(u.ComprobarContrasena("ContraseñaSegura123!"));
+    }
+
+    // Sin contraseña establecida no tiene credenciales; con ella sí
+    [TestMethod]
+    public void TieneCredenciales_SoloConContrasena()
+    {
+        Usuario sinClave = new Usuario { Cuenta = "nueva" };
+
+        Assert.IsFalse(sinClave.TieneCredencialesConfiguradas);
+        Assert.IsTrue(CrearUsuarioPrueba().TieneCredencialesConfiguradas);
+    }
+
+    // ToString: nombre solo o nombre y apellidos
+    [TestMethod]
+    [DataRow("Alejandro", "", "Alejandro")]
+    [DataRow("Alejandro", "   ", "Alejandro")]
+    [DataRow("Alejandro", "García", "Alejandro García")]
+    public void ToString_NombreYApellidos(string nombre, string apellidos, string esperado)
+    {
+        Usuario u = new Usuario { Nombre = nombre, Apellidos = apellidos };
+
+        Assert.AreEqual(esperado, u.ToString());
+    }
+
+    // El alias IdProyecto de Proyecto es el mismo que Id
+    [TestMethod]
+    public void Proyecto_AliasIdProyecto()
+    {
+        Proyecto p = new Proyecto { IdProyecto = 3 };
+
+        Assert.AreEqual(3, p.Id);
+        Assert.AreEqual(3, p.IdProyecto);
+    }
 }

@@ -148,7 +148,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
   - En Visual Studio: Menú `Prueba` $\to$ `Analizar cobertura de código para todas las pruebas`.
   - Verificar que el recubrimiento de líneas y ramas en la librería `Nucleo` supera el **90%** (requisito del profesor para la máxima nota).
   - Identificar líneas o ramas no cubiertas y añadir los casos de prueba necesarios.
-  - *Criterio de éxito:* Cobertura $\ge 90\%$ confirmada en todas las clases de prueba.
+  - Documentar el análisis y lo insuficientemente probado en `docs/Analisis_Cobertura.md`.
+  - *Criterio de éxito:* Cobertura medida el 25/10: **100 %** de líneas y ramas en `Nucleo` y `Datos` (154 pruebas).
 
 ---
 

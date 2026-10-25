@@ -308,8 +308,10 @@ public class DatosTests
         _datos.GuardarUsuario(new Usuario { Cuenta = "u1" });
 
         Assert.AreEqual(0, antes.Count);
-        Assert.AreEqual(1, _datos.Usuarios.Count);
-        Assert.AreNotSame(_datos.Usuarios, _datos.Usuarios);
+        var despues = _datos.Usuarios;
+
+        Assert.AreEqual(1, despues.Count);
+        Assert.AreNotSame(antes, despues);
     }
 
     // 19. No se puede dar de alta un usuario con un email que ya existe (sin mirar mayúsculas)
