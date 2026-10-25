@@ -22,14 +22,21 @@ public class Datos : IDatos
 
     public Usuario? GuardarUsuario(Usuario usuario)
     {
+        // Si el código no existe no se puede actualizar
+        if (usuario.Id >= 0 && !_usuarios.ContainsKey(usuario.Id))
+        {
+            return null;
+        }
+
+        // El email no se puede repetir entre usuarios distintos
+        if (EmailEnUso(usuario.EMail, usuario.Id))
+        {
+            return null;
+        }
+
         if (usuario.Id < 0)
         {
             usuario.Id = ++_ultimoIdUsuario;
-        }
-        else if (!_usuarios.ContainsKey(usuario.Id))
-        {
-            // Si el código no existe no se puede actualizar
-            return null;
         }
 
         _usuarios[usuario.Id] = usuario;
@@ -43,14 +50,38 @@ public class Datos : IDatos
 
     public Usuario? LeerUsuario(string eMail)
     {
-        return _usuarios.Values.FirstOrDefault(u => u.EMail == eMail);
+        // El email no distingue mayúsculas
+        return _usuarios.Values.FirstOrDefault(
+            u => string.Equals(u.EMail, eMail, StringComparison.OrdinalIgnoreCase));
     }
 
     public Usuario? EliminarUsuario(int idUsuario)
     {
         // Devuelve el usuario borrado o null si no existía
-        _usuarios.Remove(idUsuario, out Usuario? borrado);
+        if (!_usuarios.Remove(idUsuario, out Usuario? borrado))
+        {
+            return null;
+        }
+
+        // Lo quitamos también de los proyectos donde estaba asignado
+        foreach (Proyecto proyecto in _proyectos.Values)
+        {
+            proyecto.UsuariosAsignados.Remove(idUsuario);
+        }
+
+        // Los logs no se borran porque son el registro de auditoría
         return borrado;
+    }
+
+    private bool EmailEnUso(string eMail, int idUsuario)
+    {
+        if (string.IsNullOrWhiteSpace(eMail))
+        {
+            return false;
+        }
+
+        Usuario? otro = LeerUsuario(eMail);
+        return otro is not null && otro.Id != idUsuario;
     }
 
     public Rol? GuardarRol(Rol rol)
@@ -75,7 +106,20 @@ public class Datos : IDatos
 
     public Rol? EliminarRol(int idRol)
     {
-        _roles.Remove(idRol, out Rol? borrado);
+        if (!_roles.Remove(idRol, out Rol? borrado))
+        {
+            return null;
+        }
+
+        // Los usuarios que tenían ese rol se quedan sin rol (0)
+        foreach (Usuario usuario in _usuarios.Values)
+        {
+            if (usuario.RolId == idRol)
+            {
+                usuario.RolId = 0;
+            }
+        }
+
         return borrado;
     }
 

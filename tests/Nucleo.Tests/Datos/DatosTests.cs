@@ -311,4 +311,99 @@ public class DatosTests
         Assert.AreEqual(1, _datos.Usuarios.Count);
         Assert.AreNotSame(_datos.Usuarios, _datos.Usuarios);
     }
+
+    // 19. No se puede dar de alta un usuario con un email que ya existe (sin mirar mayúsculas)
+    [TestMethod]
+    [DataRow("pedro@ubu.es")]
+    [DataRow("PEDRO@UBU.ES")]
+    [DataRow("Pedro@Ubu.Es")]
+    public void Usuario_EmailDuplicado_DevuelveNull(string emailRepetido)
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" });
+
+        Usuario? duplicado = _datos.GuardarUsuario(new Usuario { Cuenta = "otro", EMail = emailRepetido });
+
+        Assert.IsNull(duplicado);
+        Assert.AreEqual(1, _datos.Usuarios.Count);
+    }
+
+    // 20. Tampoco se puede cambiar el email de un usuario por el de otro
+    [TestMethod]
+    public void Usuario_CambiarEmailAUnoExistente_DevuelveNull()
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" });
+        Usuario ana = _datos.GuardarUsuario(new Usuario { Cuenta = "ana", EMail = "ana@ubu.es" })!;
+
+        ana.EMail = "pedro@ubu.es";
+
+        Assert.IsNull(_datos.GuardarUsuario(ana));
+    }
+
+    // 21. Un usuario puede volver a guardarse con su propio email, y un alta rechazada no gasta Id
+    [TestMethod]
+    public void Usuario_GuardarConSuPropioEmail_Actualiza()
+    {
+        Usuario pedro = _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" })!;
+        _datos.GuardarUsuario(new Usuario { Cuenta = "copia", EMail = "pedro@ubu.es" });
+
+        pedro.Nombre = "Pedro";
+        Usuario? actualizado = _datos.GuardarUsuario(pedro);
+        Usuario ana = _datos.GuardarUsuario(new Usuario { Cuenta = "ana", EMail = "ana@ubu.es" })!;
+
+        Assert.IsNotNull(actualizado);
+        Assert.AreEqual(2, ana.Id);
+    }
+
+    // 22. Buscar por email no distingue mayúsculas
+    [TestMethod]
+    public void Buscar_PorEmail_SinDistinguirMayusculas()
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" });
+
+        Assert.IsNotNull(_datos.LeerUsuario("PEDRO@ubu.ES"));
+    }
+
+    // 23. Al borrar un usuario desaparece de los proyectos donde estaba asignado
+    [TestMethod]
+    public void EliminarUsuario_LoQuitaDeLosProyectos()
+    {
+        Usuario pedro = _datos.GuardarUsuario(new Usuario { Cuenta = "pedro" })!;
+        Usuario ana = _datos.GuardarUsuario(new Usuario { Cuenta = "ana" })!;
+        Proyecto p = _datos.GuardarProyecto(new Proyecto
+        {
+            Nombre = "Web App",
+            UsuariosAsignados = new List<int> { pedro.Id, ana.Id }
+        })!;
+
+        _datos.EliminarUsuario(pedro.Id);
+
+        CollectionAssert.AreEqual(new List<int> { ana.Id }, _datos.LeerProyecto(p.Id)!.UsuariosAsignados);
+    }
+
+    // 24. Al borrar un rol, los usuarios que lo tenían se quedan sin rol (0)
+    [TestMethod]
+    public void EliminarRol_UsuariosSeQuedanSinRol()
+    {
+        Rol tester = _datos.GuardarRol(new Rol { Nombre = "Tester" })!;
+        Rol jefe = _datos.GuardarRol(new Rol { Nombre = "Jefe" })!;
+        Usuario pedro = _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", RolId = tester.Id })!;
+        Usuario ana = _datos.GuardarUsuario(new Usuario { Cuenta = "ana", RolId = jefe.Id })!;
+
+        _datos.EliminarRol(tester.Id);
+
+        Assert.AreEqual(0, _datos.LeerUsuario(pedro.Id)!.RolId);
+        Assert.AreEqual(jefe.Id, _datos.LeerUsuario(ana.Id)!.RolId);
+    }
+
+    // 25. Al borrar un usuario se mantienen sus logs (auditoría)
+    [TestMethod]
+    public void EliminarUsuario_MantieneLogs()
+    {
+        Usuario pedro = _datos.GuardarUsuario(new Usuario { Cuenta = "pedro" })!;
+        _datos.AgregarLog(new EntradaLog { UsuarioId = pedro.Id, Accion = "Inicio de sesión" });
+
+        _datos.EliminarUsuario(pedro.Id);
+
+        Assert.AreEqual(1, _datos.Logs.Count);
+    }
 }
