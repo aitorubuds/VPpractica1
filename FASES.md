@@ -18,12 +18,12 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [X] **Fase 02 — Regularización de la Capa de Datos (`src/Datos`)**
   - Mover/incorporar `IDatos.cs` con el namespace `Datos`.
-  - Crear `src/Datos/Datos.csproj` configurado para `net8.0` con referencia a `Nucleo`.
+  - Crear `src/Datos/Datos.csproj` configurado para `net10.0` con referencia a `Nucleo`.
   - *Criterio de éxito:* El proyecto `Datos` compila sin errores de tipos o referencias.
 
 - [X] **Fase 03 — Creación del Proyecto de Pruebas Unitarias (`tests/Nucleo.Tests`)**
   - Crear la carpeta `tests/Nucleo.Tests/`.
-  - Crear `Nucleo.Tests.csproj` usando `net8.0`, `MSTest.TestFramework` (3.10.2+), `MSTest.TestAdapter`, `Microsoft.NET.Test.Sdk` y `coverlet.collector`.
+  - Crear `Nucleo.Tests.csproj` usando `net10.0`, `MSTest.TestFramework` (3.10.2+), `MSTest.TestAdapter`, `Microsoft.NET.Test.Sdk` y `coverlet.collector`.
   - Referenciar `src/Nucleo/Nucleo.csproj` y `src/Datos/Datos.csproj`.
   - *Criterio de éxito:* El Explorador de Pruebas de Visual Studio detecta el proyecto.
 
