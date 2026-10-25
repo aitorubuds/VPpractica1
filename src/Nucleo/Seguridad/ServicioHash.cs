@@ -46,7 +46,7 @@ public class ServicioHash
 
             return CryptographicOperations.FixedTimeEquals(hashCalculado, hashEsperado);
         }
-        catch (Exception ex) when (ex is FormatException or ArgumentException or CryptographicException)
+        catch (FormatException)
         {
             return false;
         }

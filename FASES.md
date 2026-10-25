@@ -69,7 +69,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - `Verificar`: devuelve `true` con texto, hash y sal legítimos.
     - `Verificar`: devuelve `false` con texto erróneo, hash corrupto, sal corrupta o argumentos nulos/vacíos.
     - `Verificar`: robustez absoluta ante datos malformados (no propaga excepciones no controladas).
-  - *Criterio de éxito:* Batería completa de caja negra pasa al 100% en verde.
+  - Tabla de casos CP-01 a CP-20 en `docs/E01_Casos_de_Prueba.md` (más `ResultadoHashTests.cs` para ED-18 a ED-20).
+  - *Criterio de éxito:* Batería completa de caja negra pasa al 100% en verde y `ServicioHash` con 100% de cobertura.
 
 ---
 
