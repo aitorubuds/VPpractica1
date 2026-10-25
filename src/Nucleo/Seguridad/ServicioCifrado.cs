@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace TestProjectManagementPlatform.Nucleo.Seguridad;
+namespace Nucleo.Seguridad;
 
 /// <summary>
 /// Proporciona servicios de cifrado y descifrado de información utilizando

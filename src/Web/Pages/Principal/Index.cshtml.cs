@@ -23,7 +23,8 @@ public class IndexModel : PageModel
     {
         int? idUsuario = HttpContext.Session.GetInt32(ClavesSesion.UsuarioId);
 
-        if (idUsuario <= 0)
+        // sin sesión iniciada vuelve al login
+        if (idUsuario is null or <= 0)
         {
             EliminarDatosSesion();
             return RedirectToPage("/Login/Index");

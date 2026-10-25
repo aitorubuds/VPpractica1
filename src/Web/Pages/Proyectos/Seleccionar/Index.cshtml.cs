@@ -169,8 +169,18 @@ public class IndexModel : PageModel
             Activo = true
         };
 
-        Proyecto proyectoGuardado =
+        Proyecto? proyectoGuardado =
             _datos.GuardarProyecto(nuevoProyecto);
+
+        // Si la capa de datos no lo guarda avisamos en vez de romper
+        if (proyectoGuardado is null)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "No se ha podido crear el proyecto.");
+
+            return Page();
+        }
 
         // El nuevo proyecto se establece como proyecto actual
         // de este usuario.

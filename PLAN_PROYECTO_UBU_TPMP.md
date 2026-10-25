@@ -10,7 +10,7 @@
 
 ## 1. Resumen y Objetivos del Proyecto
 
-El proyecto **UBU_TPMP** (*UBUTestProjectManagementPlatform*) es una plataforma web para la gestión integral de proyectos de pruebas, inspirada funcionalmente en la herramienta **TestLink** y construida con tecnologías Microsoft (.NET 8, C#, ASP.NET Core y Visual Studio Community 2026).
+El proyecto **UBU_TPMP** (*UBUTestProjectManagementPlatform*) es una plataforma web para la gestión integral de proyectos de pruebas, inspirada funcionalmente en la herramienta **TestLink** y construida con tecnologías Microsoft (.NET 10, C#, ASP.NET Core y Visual Studio Community 2026).
 
 El objetivo principal de la práctica no radica en desarrollar una interfaz gráfica sofisticada ni funcionalidades exhaustivas fuera del alcance, sino en **demostrar el dominio riguroso de la metodología de validación y verificación de software**:
 - Trazabilidad bidireccional completa desde requisitos hasta casos de prueba.
@@ -37,14 +37,14 @@ Las siguientes pautas fueron remarcadas expresamente por el profesor Pedro Rened
 
 ---
 
-## 3. Arquitectura de la Solución (.NET 8)
+## 3. Arquitectura de la Solución (.NET 10)
 
 La solución de Visual Studio se estructura de forma desacoplada y modular para garantizar la testabilidad:
 
 ```text
 TestProjectManagementPlatform.sln
 ├── src/
-│   ├── Nucleo/                                 # Librería de Clases (.NET 8) - Núcleo del dominio
+│   ├── Nucleo/                                 # Librería de Clases (.NET 10) - Núcleo del dominio
 │   │   ├── Modelos/                            # Clases de dominio del sistema
 │   │   │   ├── Usuario.cs                      # Entidad Usuario con seguridad y funcionalidad de grupo
 │   │   │   ├── Rol.cs                          # Roles y asignación de permisos
@@ -58,7 +58,7 @@ TestProjectManagementPlatform.sln
 │   │   │   └── ServicioContrasenas.cs          # Validación de reglas de complejidad
 │   │   └── Nucleo.csproj
 │   │
-│   ├── Datos/                                  # Librería de Clases (.NET 8) - Capa de persistencia mock
+│   ├── Datos/                                  # Librería de Clases (.NET 10) - Capa de persistencia mock
 │   │   ├── IDatos.cs                           # Contrato de operaciones CRUD y gestión
 │   │   ├── Datos.cs                            # Implementación en memoria DB_TPMP (Diccionarios y Listas)
 │   │   └── Datos.csproj

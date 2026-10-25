@@ -18,12 +18,12 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [X] **Fase 02 — Regularización de la Capa de Datos (`src/Datos`)**
   - Mover/incorporar `IDatos.cs` con el namespace `Datos`.
-  - Crear `src/Datos/Datos.csproj` configurado para `net8.0` con referencia a `Nucleo`.
+  - Crear `src/Datos/Datos.csproj` configurado para `net10.0` con referencia a `Nucleo`.
   - *Criterio de éxito:* El proyecto `Datos` compila sin errores de tipos o referencias.
 
 - [X] **Fase 03 — Creación del Proyecto de Pruebas Unitarias (`tests/Nucleo.Tests`)**
   - Crear la carpeta `tests/Nucleo.Tests/`.
-  - Crear `Nucleo.Tests.csproj` usando `net8.0`, `MSTest.TestFramework` (3.10.2+), `MSTest.TestAdapter`, `Microsoft.NET.Test.Sdk` y `coverlet.collector`.
+  - Crear `Nucleo.Tests.csproj` con `MSTest.Sdk` (4.5.1) sobre `net10.0` y `global.json` con Microsoft.Testing.Platform (cobertura con `dotnet test --coverage`).
   - Referenciar `src/Nucleo/Nucleo.csproj` y `src/Datos/Datos.csproj`.
   - *Criterio de éxito:* El Explorador de Pruebas de Visual Studio detecta el proyecto.
 
@@ -60,7 +60,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - `Generar(null)` $\to$ lanza excepción.
     - `Generar("")` $\to$ lanza excepción.
     - `Generar("   ")` $\to$ lanza excepción.
-  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsException<ArgumentException>`.
+  - *Criterio de éxito:* Tests verificados con `Assert.ThrowsExactly<InvalidOperationException>`.
 
 - [X] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
   - Implementar las especificaciones ED-05 a ED-20 en `ServicioHashTests.cs`:
@@ -69,7 +69,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
     - `Verificar`: devuelve `true` con texto, hash y sal legítimos.
     - `Verificar`: devuelve `false` con texto erróneo, hash corrupto, sal corrupta o argumentos nulos/vacíos.
     - `Verificar`: robustez absoluta ante datos malformados (no propaga excepciones no controladas).
-  - *Criterio de éxito:* Batería completa de caja negra pasa al 100% en verde.
+  - Tabla de casos CP-01 a CP-20 en `docs/E01_Casos_de_Prueba.md` (más `ResultadoHashTests.cs` para ED-18 a ED-20).
+  - *Criterio de éxito:* Batería completa de caja negra pasa al 100% en verde y `ServicioHash` con 100% de cobertura.
 
 ---
 
@@ -111,7 +112,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 - [X] **Fase 12 — Consolidación de `Datos.cs`**
   - Verificar la lógica de asignación autoincremental de identificadores:
     - Si `Id < 0` $\to$ asigna `++_ultimoId` e inserta.
-    - Si `Id >= 0` $\to$ actualiza la entidad existente.
+    - Si `Id >= 0` y existe $\to$ actualiza la entidad; si no existe $\to$ devuelve `null`.
   - Verificar operaciones CRUD de `Usuario`, `Rol`, `Proyecto` y registro de `EntradaLog`.
   - Verificar que `Reiniciar()` vacía todas las colecciones y restablece los contadores a 0.
   - *Criterio de éxito:* `Datos.cs` listo para pruebas sin persistencia real.
@@ -147,7 +148,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
   - En Visual Studio: Menú `Prueba` $\to$ `Analizar cobertura de código para todas las pruebas`.
   - Verificar que el recubrimiento de líneas y ramas en la librería `Nucleo` supera el **90%** (requisito del profesor para la máxima nota).
   - Identificar líneas o ramas no cubiertas y añadir los casos de prueba necesarios.
-  - *Criterio de éxito:* Cobertura $\ge 90\%$ confirmada en todas las clases de prueba.
+  - Documentar el análisis y lo insuficientemente probado en `docs/Analisis_Cobertura.md`.
+  - *Criterio de éxito:* Cobertura medida el 25/10: **100 %** de líneas y ramas en `Nucleo` y `Datos` (154 pruebas).
 
 ---
 
@@ -156,7 +158,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 - [X] **Fase 16 — Configuración Web e Inyección de Dependencias**
   - Configurar `Program.cs` en `src/Web/`:
     - Registrar `IDatos` como Singleton en memoria.
-    - Poblar datos semilla (*seed data*) conocidos en el inicio (`admin@ubu.es` y proyecto demo).
+    - Cargar los datos de prueba con `DatosPrueba.Crear()` (`src/Datos/DatosPrueba.cs`): estado conocido de 4 usuarios, 3 roles, 3 proyectos y 2 logs.
   - *Criterio de éxito:* La aplicación web arranca en local (`dotnet run` o F5 en Visual Studio).
 
 - [X] **Fase 17 — Vistas y Flujos Web de Usabilidad**
