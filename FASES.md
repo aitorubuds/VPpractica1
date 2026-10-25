@@ -157,7 +157,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 - [X] **Fase 16 — Configuración Web e Inyección de Dependencias**
   - Configurar `Program.cs` en `src/Web/`:
     - Registrar `IDatos` como Singleton en memoria.
-    - Poblar datos semilla (*seed data*) conocidos en el inicio (`admin@ubu.es` y proyecto demo).
+    - Cargar los datos de prueba con `DatosPrueba.Crear()` (`src/Datos/DatosPrueba.cs`): estado conocido de 4 usuarios, 3 roles, 3 proyectos y 2 logs.
   - *Criterio de éxito:* La aplicación web arranca en local (`dotnet run` o F5 en Visual Studio).
 
 - [X] **Fase 17 — Vistas y Flujos Web de Usabilidad**

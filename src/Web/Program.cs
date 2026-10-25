@@ -1,35 +1,11 @@
 using Datos;
-using Nucleo.Modelos;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
-// Instancia única en memoria de la capa de datos
-var capaDatos = new Datos.Datos();
-
-// Usuario de prueba para iniciar sesión
-var usuarioInicial = new Usuario
-{
-    Nombre = "Alex",
-    Apellidos = "Alumno",
-    EMail = "admin@ubu.es",
-    Cuenta = "admin",
-    Activo = true
-};
-usuarioInicial.EstablecerContrasena("Password123!");
-capaDatos.GuardarUsuario(usuarioInicial);
-
-// Proyecto inicial de prueba
-capaDatos.GuardarProyecto(new Proyecto
-{
-    Nombre = "Plataforma UBU TPMP",
-    Siglas = "UBU-TPMP",
-    Descripcion = "Proyecto de gestión de pruebas y validación.",
-    Activo = true
-});
-
-builder.Services.AddSingleton<IDatos>(capaDatos);
+// Instancia única en memoria de la capa de datos, cargada con los datos de prueba
+builder.Services.AddSingleton<IDatos>(DatosPrueba.Crear());
 
 builder.Services.AddDistributedMemoryCache();
 
