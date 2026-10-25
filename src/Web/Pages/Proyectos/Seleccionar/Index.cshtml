@@ -49,7 +49,7 @@
 
     @if (TempData["MensajeCorrecto"] is string mensaje)
     {
-        <div class="alert alert-success"
+        <div id="mensajeCorrecto" class="alert alert-success"
              role="status">
 
             @mensaje
@@ -60,7 +60,7 @@
     @if (!ViewContext.ModelState.IsValid)
     {
         <div asp-validation-summary="ModelOnly"
-             class="alert alert-danger">
+             id="mensajeErrores" class="alert alert-danger">
         </div>
     }
 
@@ -141,7 +141,7 @@
 
                         </div>
 
-                        <button type="submit"
+                        <button type="submit" id="btnCrearProyecto"
                                 class="btn btn-primary w-100">
 
                             Añadir proyecto
@@ -304,7 +304,7 @@
                                                            name="idProyecto"
                                                            value="@proyecto.IdProyecto" />
 
-                                                    <button type="submit"
+                                                    <button type="submit" id="btnSeleccionar-@proyecto.Siglas"
                                                             class="btn
                                                                    btn-outline-primary">
 
