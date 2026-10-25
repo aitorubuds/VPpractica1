@@ -190,4 +190,41 @@ public class DatosTests
         Assert.IsNull(rolFalso);
         Assert.IsNull(proyFalso);
     }
+
+    // 12. Guardar con un código >= 0 que no existe no inserta nada y devuelve null
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(5)]
+    [DataRow(9999)]
+    public void Guardar_CodigoInexistente_DevuelveNull(int id)
+    {
+        Usuario? usuario = _datos.GuardarUsuario(new Usuario { Id = id, Cuenta = "fantasma" });
+        Rol? rol = _datos.GuardarRol(new Rol { Id = id, Nombre = "Fantasma" });
+        Proyecto? proyecto = _datos.GuardarProyecto(new Proyecto { Id = id, Nombre = "Fantasma" });
+
+        Assert.IsNull(usuario);
+        Assert.IsNull(rol);
+        Assert.IsNull(proyecto);
+        Assert.AreEqual(0, _datos.Usuarios.Count);
+        Assert.AreEqual(0, _datos.Roles.Count);
+        Assert.AreEqual(0, _datos.Proyectos.Count);
+    }
+
+    // 13. Actualizar un rol y un proyecto existentes mantiene el Id y no duplica
+    [TestMethod]
+    public void Actualizar_RolYProyectoExistentes()
+    {
+        Rol r = _datos.GuardarRol(new Rol { Nombre = "Tester" })!;
+        Proyecto p = _datos.GuardarProyecto(new Proyecto { Nombre = "Web App" })!;
+
+        Rol? rolActualizado = _datos.GuardarRol(new Rol { Id = r.Id, Nombre = "Jefe de pruebas" });
+        Proyecto? proyActualizado = _datos.GuardarProyecto(new Proyecto { Id = p.Id, Nombre = "Web App 2" });
+
+        Assert.IsNotNull(rolActualizado);
+        Assert.IsNotNull(proyActualizado);
+        Assert.AreEqual("Jefe de pruebas", _datos.LeerRol(r.Id)!.Nombre);
+        Assert.AreEqual("Web App 2", _datos.LeerProyecto(p.Id)!.Nombre);
+        Assert.AreEqual(1, _datos.Roles.Count);
+        Assert.AreEqual(1, _datos.Proyectos.Count);
+    }
 }

@@ -112,7 +112,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 - [X] **Fase 12 — Consolidación de `Datos.cs`**
   - Verificar la lógica de asignación autoincremental de identificadores:
     - Si `Id < 0` $\to$ asigna `++_ultimoId` e inserta.
-    - Si `Id >= 0` $\to$ actualiza la entidad existente.
+    - Si `Id >= 0` y existe $\to$ actualiza la entidad; si no existe $\to$ devuelve `null`.
   - Verificar operaciones CRUD de `Usuario`, `Rol`, `Proyecto` y registro de `EntradaLog`.
   - Verificar que `Reiniciar()` vacía todas las colecciones y restablece los contadores a 0.
   - *Criterio de éxito:* `Datos.cs` listo para pruebas sin persistencia real.

@@ -25,7 +25,12 @@ public class Datos : IDatos
         {
             usuario.Id = ++_ultimoIdUsuario;
         }
-        
+        else if (!_usuarios.ContainsKey(usuario.Id))
+        {
+            // Si el código no existe no se puede actualizar
+            return null;
+        }
+
         _usuarios[usuario.Id] = usuario;
         return usuario;
     }
@@ -56,7 +61,11 @@ public class Datos : IDatos
         {
             rol.Id = ++_ultimoIdRol;
         }
-        
+        else if (!_roles.ContainsKey(rol.Id))
+        {
+            return null;
+        }
+
         _roles[rol.Id] = rol;
         return rol;
     }
@@ -82,7 +91,11 @@ public class Datos : IDatos
         {
             proyecto.Id = ++_ultimoIdProyecto;
         }
-        
+        else if (!_proyectos.ContainsKey(proyecto.Id))
+        {
+            return null;
+        }
+
         _proyectos[proyecto.Id] = proyecto;
         return proyecto;
     }
