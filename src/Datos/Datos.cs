@@ -47,12 +47,9 @@ public class Datos : IDatos
 
     public Usuario? EliminarUsuario(int idUsuario)
     {
-        if (_usuarios.ContainsKey(idUsuario))
-        {
-            _usuarios.Remove(idUsuario);
-            return new Usuario { Id = idUsuario };
-        }
-        return null;
+        // Devuelve el usuario borrado o null si no existía
+        _usuarios.Remove(idUsuario, out Usuario? borrado);
+        return borrado;
     }
 
     public Rol? GuardarRol(Rol rol)
@@ -77,12 +74,8 @@ public class Datos : IDatos
 
     public Rol? EliminarRol(int idRol)
     {
-        if (_roles.ContainsKey(idRol))
-        {
-            _roles.Remove(idRol);
-            return new Rol { Id = idRol };
-        }
-        return null;
+        _roles.Remove(idRol, out Rol? borrado);
+        return borrado;
     }
 
     public Proyecto? GuardarProyecto(Proyecto proyecto)
@@ -107,12 +100,8 @@ public class Datos : IDatos
 
     public Proyecto? EliminarProyecto(int idProyecto)
     {
-        if (_proyectos.ContainsKey(idProyecto))
-        {
-            _proyectos.Remove(idProyecto);
-            return new Proyecto { Id = idProyecto };
-        }
-        return null;
+        _proyectos.Remove(idProyecto, out Proyecto? borrado);
+        return borrado;
     }
 
     public void AgregarLog(EntradaLog log)

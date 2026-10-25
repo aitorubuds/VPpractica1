@@ -227,4 +227,53 @@ public class DatosTests
         Assert.AreEqual(1, _datos.Roles.Count);
         Assert.AreEqual(1, _datos.Proyectos.Count);
     }
+
+    // 14. Eliminar devuelve el mismo objeto que se ha borrado, con todos sus datos
+    [TestMethod]
+    public void Eliminar_DevuelveObjetoBorrado()
+    {
+        Usuario u = _datos.GuardarUsuario(new Usuario { Cuenta = "borrar", Nombre = "Borrar", EMail = "borrar@ubu.es" })!;
+        Rol r = _datos.GuardarRol(new Rol { Nombre = "RolBorrar" })!;
+        Proyecto p = _datos.GuardarProyecto(new Proyecto { Nombre = "ProyBorrar", Siglas = "PB" })!;
+
+        Usuario? usuarioBorrado = _datos.EliminarUsuario(u.Id);
+        Rol? rolBorrado = _datos.EliminarRol(r.Id);
+        Proyecto? proyectoBorrado = _datos.EliminarProyecto(p.Id);
+
+        Assert.AreSame(u, usuarioBorrado);
+        Assert.AreSame(r, rolBorrado);
+        Assert.AreSame(p, proyectoBorrado);
+        Assert.AreEqual("borrar@ubu.es", usuarioBorrado!.EMail);
+        Assert.AreEqual("RolBorrar", rolBorrado!.Nombre);
+        Assert.AreEqual("PB", proyectoBorrado!.Siglas);
+    }
+
+    // 15. Eliminar algo que no existe devuelve null y no toca lo demás
+    [TestMethod]
+    [DataRow(-1)]
+    [DataRow(0)]
+    [DataRow(9999)]
+    public void Eliminar_Inexistente_DevuelveNull(int id)
+    {
+        _datos.GuardarUsuario(new Usuario { Cuenta = "u1" });
+        _datos.GuardarRol(new Rol { Nombre = "Tester" });
+        _datos.GuardarProyecto(new Proyecto { Nombre = "Web App" });
+
+        Assert.IsNull(_datos.EliminarUsuario(id));
+        Assert.IsNull(_datos.EliminarRol(id));
+        Assert.IsNull(_datos.EliminarProyecto(id));
+        Assert.AreEqual(1, _datos.Usuarios.Count);
+        Assert.AreEqual(1, _datos.Roles.Count);
+        Assert.AreEqual(1, _datos.Proyectos.Count);
+    }
+
+    // 16. Borrar dos veces lo mismo: la segunda vez ya no existe
+    [TestMethod]
+    public void Eliminar_DosVeces_SegundaDevuelveNull()
+    {
+        Usuario u = _datos.GuardarUsuario(new Usuario { Cuenta = "doble" })!;
+
+        Assert.IsNotNull(_datos.EliminarUsuario(u.Id));
+        Assert.IsNull(_datos.EliminarUsuario(u.Id));
+    }
 }
