@@ -145,7 +145,7 @@ public class IntegracionTests
         // 2. Borramos ese rol
         datos.EliminarRol(idRol);
 
-        // 3. Volvemos a leer al tester: se ha quedado sin rol
+        // 3. Volvemos a leer al tester y se ha quedado sin rol
         tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
         Assert.AreEqual(0, tester.RolId);
 
@@ -187,7 +187,7 @@ public class IntegracionTests
         Assert.IsTrue(tieneLogs);
     }
 
-    // Probamos el login entero: falla 3 veces, se bloquea, lo desbloqueamos y el teléfono se sigue leyendo
+    // Probamos el login entero, falla 3 veces, se bloquea, lo desbloqueamos y el teléfono se sigue leyendo
     [TestMethod]
     public void Flujo_LoginAuditadoYTelefono()
     {

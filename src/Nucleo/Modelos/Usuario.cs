@@ -143,13 +143,13 @@ public class Usuario
         IntentosFallidos = 0;
     }
 
-    // Alias para que funcione con la web del profesor: hace lo mismo que ComprobarContrasena
+    // Alias para que funcione con la web del profesor
     public bool CompruebaPassword(string contrasena)
     {
         return ComprobarContrasena(contrasena);
     }
 
-    // Alias para que funcione con la web del profesor: hace lo mismo que CambiarContrasena
+    // Lo mismo para cambiar la contraseña
     public bool CambiaPassword(string contrasenaActual, string nuevaContrasena)
     {
         return CambiarContrasena(contrasenaActual, nuevaContrasena);

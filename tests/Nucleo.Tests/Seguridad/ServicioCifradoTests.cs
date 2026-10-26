@@ -125,7 +125,7 @@ public class ServicioCifradoTests
         Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", "no-es-base64!!!"));
     }
 
-    // Cifrar con una clave de 16 bytes (tamaño incorrecto) lanza ArgumentException
+    // Cifrar con una clave de 16 bytes, que no es el tamaño bueno, lanza ArgumentException
     [TestMethod]
     public void Cifrar_Clave16Bytes()
     {

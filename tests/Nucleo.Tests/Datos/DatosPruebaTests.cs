@@ -71,7 +71,7 @@ public class DatosPruebaTests
         Assert.IsFalse(baja.ComprobarContrasena(DatosPrueba.ClaveBaja));
     }
 
-    // 6. Los Ids son los esperados (1, 2, 3...) y cada usuario tiene su rol
+    // 6. Los Ids empiezan en 1 y cada usuario tiene su rol
     [TestMethod]
     public void Crear_IdsYRolesConocidos()
     {

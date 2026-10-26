@@ -26,7 +26,7 @@ public class ResultadoHash : IEquatable<ResultadoHash>
         return Hash == other.Hash && Sal == other.Sal;
     }
 
-    // Comparar con cualquier objeto: solo puede ser igual si es otro ResultadoHash
+    // Comparar con cualquier objeto, solo es igual si es otro ResultadoHash
     public override bool Equals(object? obj)
     {
         return Equals(obj as ResultadoHash);

@@ -99,7 +99,7 @@ public class Datos : IDatos
         return null;
     }
 
-    // Borrar un usuario: devuelve el usuario borrado o null si no existía
+    // Borrar un usuario y devolverlo, o null si no existía
     public Usuario? EliminarUsuario(int idUsuario)
     {
         if (!_usuarios.ContainsKey(idUsuario))
@@ -168,7 +168,7 @@ public class Datos : IDatos
         return null;
     }
 
-    // Borrar un rol: devuelve el rol borrado o null si no existía
+    // Borrar un rol y devolverlo, o null si no existía
     public Rol? EliminarRol(int idRol)
     {
         if (!_roles.ContainsKey(idRol))
@@ -179,7 +179,7 @@ public class Datos : IDatos
         Rol borrado = _roles[idRol];
         _roles.Remove(idRol);
 
-        // Los usuarios que tenían ese rol se quedan sin rol (0)
+        // Los usuarios que tenían ese rol se quedan sin rol, con el 0
         foreach (Usuario usuario in _usuarios.Values)
         {
             if (usuario.RolId == idRol)
@@ -226,7 +226,7 @@ public class Datos : IDatos
         return null;
     }
 
-    // Borrar un proyecto: devuelve el proyecto borrado o null si no existía
+    // Borrar un proyecto y devolverlo, o null si no existía
     public Proyecto? EliminarProyecto(int idProyecto)
     {
         if (!_proyectos.ContainsKey(idProyecto))
@@ -252,7 +252,7 @@ public class Datos : IDatos
         _logs.Add(log);
     }
 
-    // Vaciar el log: devuelve cuántas entradas se han borrado
+    // Vaciar el log y devolver cuántas entradas había
     public int LimpiarLog()
     {
         int count = _logs.Count;

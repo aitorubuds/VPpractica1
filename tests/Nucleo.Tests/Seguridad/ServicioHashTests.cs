@@ -163,7 +163,7 @@ public class ServicioHashTests
     }
 
     // Si algún parámetro es nulo, vacío o con espacios devuelve false
-    // posicion dice cuál estropeamos: 0 el texto, 1 el hash y 2 la sal
+    // posicion es el parámetro que estropeamos, 0 el texto, 1 el hash y 2 la sal
     [TestMethod]
     [DataRow(0, null, DisplayName = "CP-13 texto nulo")]
     [DataRow(1, null, DisplayName = "CP-13 hash nulo")]

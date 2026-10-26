@@ -191,7 +191,7 @@ public class DatosTests
         Assert.IsNull(proyFalso);
     }
 
-    // 12. Guardar con código 0 (no existe) no inserta nada y devuelve null
+    // 12. Guardar con el código 0, que no existe, no inserta nada y devuelve null
     [TestMethod]
     public void Guardar_CodigoCero()
     {
@@ -208,7 +208,7 @@ public class DatosTests
         Assert.AreEqual(0, _datos.Proyectos.Count);
     }
 
-    // 13. Guardar con código 5 (no existe) no inserta nada y devuelve null
+    // 13. Guardar con el código 5, que no existe, no inserta nada y devuelve null
     [TestMethod]
     public void Guardar_CodigoCinco()
     {
@@ -225,7 +225,7 @@ public class DatosTests
         Assert.AreEqual(0, _datos.Proyectos.Count);
     }
 
-    // 14. Guardar con código 9999 (no existe) no inserta nada y devuelve null
+    // 14. Guardar con el código 9999, que no existe, no inserta nada y devuelve null
     [TestMethod]
     public void Guardar_CodigoGrande()
     {
@@ -336,7 +336,7 @@ public class DatosTests
         Assert.AreEqual(1, _datos.Proyectos.Count);
     }
 
-    // 19. Eliminar con código 9999 (no existe) devuelve null y no toca lo demás
+    // 19. Eliminar con el código 9999, que no existe, devuelve null y no toca lo demás
     [TestMethod]
     public void Eliminar_CodigoGrande()
     {
@@ -353,7 +353,7 @@ public class DatosTests
         Assert.AreEqual(1, _datos.Proyectos.Count);
     }
 
-    // 20. Borrar dos veces lo mismo: la segunda vez ya no existe
+    // 20. Si borramos dos veces lo mismo, la segunda vez ya no existe
     [TestMethod]
     public void Eliminar_DosVeces()
     {
@@ -366,7 +366,7 @@ public class DatosTests
         Assert.IsNull(segunda);
     }
 
-    // 21. Las colecciones son copias: cambiarlas desde fuera no afecta a la base de datos
+    // 21. Las colecciones son copias, así que cambiarlas desde fuera no afecta a la base de datos
     [TestMethod]
     public void Colecciones_SonCopias()
     {
@@ -506,7 +506,7 @@ public class DatosTests
         CollectionAssert.AreEqual(new List<int> { ana.Id }, recuperado.UsuariosAsignados);
     }
 
-    // 30. Al borrar un rol, los usuarios que lo tenían se quedan sin rol (0)
+    // 30. Al borrar un rol, los usuarios que lo tenían se quedan sin rol, con el 0
     [TestMethod]
     public void EliminarRol_UsuariosSinRol()
     {
@@ -527,7 +527,7 @@ public class DatosTests
         Assert.AreEqual(jefe.Id, anaRecuperada.RolId);
     }
 
-    // 31. Al borrar un usuario se mantienen sus logs (auditoría)
+    // 31. Al borrar un usuario se mantienen sus logs
     [TestMethod]
     public void EliminarUsuario_MantieneLogs()
     {

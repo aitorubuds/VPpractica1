@@ -35,7 +35,7 @@ public class ResultadoHashTests
         Assert.AreNotEqual(string.Empty, resultado.Sal);
     }
 
-    // Pruebas de igualdad, no están en el E01 pero la clase lo tiene
+    // Pruebas de la igualdad entre dos ResultadoHash
 
     // Función auxiliar para crear un ResultadoHash con el hash y la sal que digamos
     private static ResultadoHash Crear(string hash, string sal)
@@ -43,7 +43,7 @@ public class ResultadoHashTests
         return new ResultadoHash { Hash = hash, Sal = sal };
     }
 
-    // Mismo Hash y Sal: son iguales y tienen el mismo GetHashCode
+    // Con el mismo Hash y la misma Sal son iguales y tienen el mismo GetHashCode
     [TestMethod]
     public void Igualdad_MismosValores_SonIguales()
     {

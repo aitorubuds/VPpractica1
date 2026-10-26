@@ -4,41 +4,131 @@ using System.Net;
 
 namespace Web.Tests;
 
-// Integración de permisos (Nucleo.Permisos) con las páginas y la auditoría, por HTTP
+// Pruebas de integración de los permisos con las páginas y el log
 [TestClass]
 public class PermisosIntegracionTests
 {
     private ClienteWeb _web = null!;
 
+    // Arrancamos una web nueva antes de cada test
     [TestInitialize]
-    public void Inicializar() => _web = new ClienteWeb();
-
-    [TestCleanup]
-    public void Limpiar() => _web.Dispose();
-
-    // el Log solo lo ve el administrador; a los demás se les deniega y se audita
-    [TestMethod]
-    [DataRow(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin, true)]
-    [DataRow(DatosPrueba.EmailTester, DatosPrueba.ClaveTester, false)]
-    [DataRow(DatosPrueba.EmailInvitado, DatosPrueba.ClaveInvitado, false)]
-    public async Task IT10_Log_SoloAdministrador(string email, string clave, bool permitido)
+    public void Inicializar()
     {
-        await _web.Login(email, clave);
+        _web = new ClienteWeb();
+    }
+
+    // Y la cerramos al terminar
+    [TestCleanup]
+    public void Limpiar()
+    {
+        _web.Dispose();
+    }
+
+    // Función auxiliar para mirar si en el log hay un acceso denegado de ese email
+    private bool HayAccesoDenegado(string email)
+    {
+        foreach (EntradaLog log in _web.Datos.Logs)
+        {
+            if (log.Accion == Auditoria.AccesoDenegado && log.NombreUsuario == email)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Función auxiliar para mirar si en el log hay algún acceso denegado
+    private bool HayAlgunAccesoDenegado()
+    {
+        foreach (EntradaLog log in _web.Datos.Logs)
+        {
+            if (log.Accion == Auditoria.AccesoDenegado)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Función auxiliar para buscar un proyecto por sus siglas, o null si no está
+    private Proyecto? BuscarProyecto(string siglas)
+    {
+        foreach (Proyecto p in _web.Datos.Proyectos.Values)
+        {
+            if (p.Siglas == siglas)
+            {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    // Función auxiliar para rellenar los campos del formulario de crear proyecto
+    private static Dictionary<string, string> CamposProyecto(string nombre, string siglas, string descripcion)
+    {
+        Dictionary<string, string> campos = new Dictionary<string, string>();
+        campos.Add("Nombre", nombre);
+        campos.Add("Siglas", siglas);
+        campos.Add("Descripcion", descripcion);
+        return campos;
+    }
+
+    // Función auxiliar para rellenar los campos del perfil con el teléfono que digamos
+    private static Dictionary<string, string> CamposPerfil(string telefono)
+    {
+        Dictionary<string, string> campos = new Dictionary<string, string>();
+        campos.Add("EMail", DatosPrueba.EmailAdmin);
+        campos.Add("Nombre", "Alex");
+        campos.Add("Apellidos", "Alumno");
+        campos.Add("Telefono", telefono);
+        return campos;
+    }
+
+    // El administrador puede entrar en el log
+    [TestMethod]
+    public async Task IT10_Log_Admin()
+    {
+        await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
         HttpResponseMessage respuesta = await _web.Get("/Log");
 
-        if (permitido)
-        {
-            Assert.AreEqual(HttpStatusCode.OK, respuesta.StatusCode);
-            return;
-        }
-
-        Assert.AreEqual("/Principal", ClienteWeb.Destino(respuesta));
-        Assert.Contains("No tienes permiso para acceder a Log.", await _web.GetHtml("/Principal"));
-        Assert.IsTrue(_web.Datos.Logs.Any(l => l.Accion == Auditoria.AccesoDenegado && l.NombreUsuario == email));
+        Assert.AreEqual(HttpStatusCode.OK, respuesta.StatusCode);
     }
 
-    //el invitado no tiene el área Proyectos
+    // Hacemos login, pedimos el log y tiene que denegarlo y apuntarlo
+    private async Task ComprobarLogDenegado(string email, string clave)
+    {
+        // 1. Hacemos login y pedimos el log
+        await _web.Login(email, clave);
+        HttpResponseMessage respuesta = await _web.Get("/Log");
+
+        // 2. Nos manda a la principal con el mensaje
+        Assert.AreEqual("/Principal", ClienteWeb.Destino(respuesta));
+        string html = await _web.GetHtml("/Principal");
+        Assert.IsTrue(html.Contains("No tienes permiso para acceder a Log."));
+
+        // 3. Queda apuntado en el log
+        Assert.IsTrue(HayAccesoDenegado(email));
+    }
+
+    // Al tester no le deja entrar en el log
+    [TestMethod]
+    public async Task IT10_Log_TesterDenegado()
+    {
+        await ComprobarLogDenegado(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+    }
+
+    // Al invitado no le deja entrar en el log
+    [TestMethod]
+    public async Task IT10_Log_InvitadoDenegado()
+    {
+        await ComprobarLogDenegado(DatosPrueba.EmailInvitado, DatosPrueba.ClaveInvitado);
+    }
+
+    // El invitado no tiene el área de proyectos
     [TestMethod]
     public async Task IT11_Proyectos_InvitadoDenegado()
     {
@@ -47,162 +137,173 @@ public class PermisosIntegracionTests
         HttpResponseMessage respuesta = await _web.Get("/Proyectos/Seleccionar");
 
         Assert.AreEqual("/Principal", ClienteWeb.Destino(respuesta));
-        Assert.Contains("No tienes permiso para acceder a Proyectos.", await _web.GetHtml("/Principal"));
+        string html = await _web.GetHtml("/Principal");
+        Assert.IsTrue(html.Contains("No tienes permiso para acceder a Proyectos."));
     }
 
-    // IT-12: cada uno ve solo sus proyectos; el administrador todos y el formulario de alta
+    // Cada uno ve solo sus proyectos, y el administrador ve todos y el formulario de alta
     [TestMethod]
     public async Task IT12_Proyectos_CadaUsuarioVeLosSuyos()
     {
+        // 1. El administrador entra en proyectos
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
         string htmlAdmin = await _web.GetHtml("/Proyectos/Seleccionar");
 
-        using ClienteWeb tester = new ClienteWeb();
-        await tester.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
-        string htmlTester = await tester.GetHtml("/Proyectos/Seleccionar");
+        // 2. El tester entra en proyectos desde otra web distinta
+        string htmlTester;
+        using (ClienteWeb webTester = new ClienteWeb())
+        {
+            await webTester.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+            htmlTester = await webTester.GetHtml("/Proyectos/Seleccionar");
+        }
 
-        Assert.Contains("ARCH", htmlAdmin);
-        Assert.Contains("handler=Crear", htmlAdmin);
+        // 3. El administrador ve ARCH y puede crear proyectos
+        Assert.IsTrue(htmlAdmin.Contains("ARCH"));
+        Assert.IsTrue(htmlAdmin.Contains("handler=Crear"));
 
-        Assert.Contains("UBU-TPMP", htmlTester);
-        Assert.Contains("ACTFIS", htmlTester);
-        Assert.DoesNotContain("ARCH", htmlTester);
-        Assert.Contains("Solo el administrador puede crear proyectos.", htmlTester);
-        Assert.DoesNotContain("handler=Crear", htmlTester);
+        // 4. El tester solo ve los suyos y no puede crear
+        Assert.IsTrue(htmlTester.Contains("UBU-TPMP"));
+        Assert.IsTrue(htmlTester.Contains("ACTFIS"));
+        Assert.IsFalse(htmlTester.Contains("ARCH"));
+        Assert.IsTrue(htmlTester.Contains("Solo el administrador puede crear proyectos."));
+        Assert.IsFalse(htmlTester.Contains("handler=Crear"));
     }
 
-    //el administrador crea un proyecto y queda guardado en Datos
+    // El administrador crea un proyecto y se guarda en Datos
     [TestMethod]
     public async Task IT13_Admin_CreaProyecto()
     {
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", new()
-        {
-            ["Nombre"] = "Proyecto de integración",
-            ["Siglas"] = "integ",
-            ["Descripcion"] = "Creado desde la prueba"
-        });
+        Dictionary<string, string> campos = CamposProyecto("Proyecto de integración", "integ", "Creado desde la prueba");
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", campos);
 
         Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
-        Assert.HasCount(DatosPrueba.NumProyectos + 1, _web.Datos.Proyectos);
-        Assert.IsTrue(_web.Datos.Proyectos.Values.Any(p => p.Siglas == "INTEG"));
-        Assert.Contains("El proyecto se ha creado y seleccionado.", await _web.GetHtml("/Proyectos/Seleccionar"));
+        Assert.AreEqual(DatosPrueba.NumProyectos + 1, _web.Datos.Proyectos.Count);
+        // Las siglas se guardan en mayúsculas
+        Assert.IsNotNull(BuscarProyecto("INTEG"));
+
+        string html = await _web.GetHtml("/Proyectos/Seleccionar");
+        Assert.IsTrue(html.Contains("El proyecto se ha creado y seleccionado."));
     }
 
-    // siglas repetidas (sin mirar mayúsculas) no se dan de alta
+    // Unas siglas repetidas no se dan de alta aunque cambien las mayúsculas
     [TestMethod]
     public async Task IT14_Admin_SiglasRepetidas()
     {
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", new()
-        {
-            ["Nombre"] = "Otro nombre",
-            ["Siglas"] = "ubu-tpmp",
-            ["Descripcion"] = "x"
-        });
+        Dictionary<string, string> campos = CamposProyecto("Otro nombre", "ubu-tpmp", "x");
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", campos);
+        string html = await ClienteWeb.Html(respuesta);
 
-        Assert.Contains("Ya existe un proyecto con esas siglas.", await ClienteWeb.Html(respuesta));
-        Assert.HasCount(DatosPrueba.NumProyectos, _web.Datos.Proyectos);
+        Assert.IsTrue(html.Contains("Ya existe un proyecto con esas siglas."));
+        Assert.AreEqual(DatosPrueba.NumProyectos, _web.Datos.Proyectos.Count);
     }
 
-    //aunque se salte la interfaz, un no administrador no puede crear proyectos
+    // Aunque se salte la página, uno que no es administrador no puede crear proyectos
     [TestMethod]
     public async Task IT15_Tester_NoPuedeCrearProyecto()
     {
         await _web.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", new()
-        {
-            ["Nombre"] = "Proyecto pirata",
-            ["Siglas"] = "PIR",
-            ["Descripcion"] = "x"
-        });
+        Dictionary<string, string> campos = CamposProyecto("Proyecto pirata", "PIR", "x");
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", campos);
+        string html = await ClienteWeb.Html(respuesta);
 
-        Assert.Contains("Solo el administrador puede crear proyectos.", await ClienteWeb.Html(respuesta));
-        Assert.HasCount(DatosPrueba.NumProyectos, _web.Datos.Proyectos);
-        Assert.IsTrue(_web.Datos.Logs.Any(l => l.Accion == Auditoria.AccesoDenegado));
+        Assert.IsTrue(html.Contains("Solo el administrador puede crear proyectos."));
+        Assert.AreEqual(DatosPrueba.NumProyectos, _web.Datos.Proyectos.Count);
+        Assert.IsTrue(HayAlgunAccesoDenegado());
     }
 
-    //seleccionar un proyecto propio funciona; uno ajeno o inactivo no
-    [TestMethod]
-    [DataRow(2, true, DisplayName = "IT-16 ACTFIS (asignado)")]
-    [DataRow(3, false, DisplayName = "IT-16 ARCH (no asignado)")]
-    [DataRow(99, false, DisplayName = "IT-16 proyecto que no existe")]
-    public async Task IT16_Tester_SeleccionarProyecto(int idProyecto, bool permitido)
+    // El tester hace login y manda el formulario para seleccionar el proyecto
+    private async Task<HttpResponseMessage> TesterSelecciona(int idProyecto)
     {
         await _web.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Seleccionar",
-            new() { ["idProyecto"] = idProyecto.ToString() });
-        string html = await ClienteWeb.Html(respuesta);
-
-        if (permitido)
-        {
-            Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
-            Assert.Contains("se ha seleccionado", await _web.GetHtml("/Proyectos/Seleccionar"));
-        }
-        else
-        {
-            Assert.Contains("El proyecto seleccionado no existe.", html);
-        }
+        Dictionary<string, string> campos = new Dictionary<string, string>();
+        campos.Add("idProyecto", idProyecto.ToString());
+        return await _web.EnviarFormulario("/Proyectos/Seleccionar", "Seleccionar", campos);
     }
 
-    // el teléfono se ve descifrado en el perfil y al cambiarlo se guarda cifrado en Datos
+    // El tester puede seleccionar ACTFIS porque está asignado
+    [TestMethod]
+    public async Task IT16_Tester_SeleccionaProyectoAsignado()
+    {
+        HttpResponseMessage respuesta = await TesterSelecciona(2);
+
+        Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
+        string html = await _web.GetHtml("/Proyectos/Seleccionar");
+        Assert.IsTrue(html.Contains("se ha seleccionado"));
+    }
+
+    // El tester no puede seleccionar ARCH porque no está asignado
+    [TestMethod]
+    public async Task IT16_Tester_SeleccionaProyectoNoAsignado()
+    {
+        HttpResponseMessage respuesta = await TesterSelecciona(3);
+        string html = await ClienteWeb.Html(respuesta);
+
+        Assert.IsTrue(html.Contains("El proyecto seleccionado no existe."));
+    }
+
+    // El tester no puede seleccionar un proyecto que no existe
+    [TestMethod]
+    public async Task IT16_Tester_SeleccionaProyectoQueNoExiste()
+    {
+        HttpResponseMessage respuesta = await TesterSelecciona(99);
+        string html = await ClienteWeb.Html(respuesta);
+
+        Assert.IsTrue(html.Contains("El proyecto seleccionado no existe."));
+    }
+
+    // El teléfono se ve descifrado en el perfil y al cambiarlo se guarda cifrado en Datos
     [TestMethod]
     public async Task IT17_Perfil_TelefonoCifrado()
     {
+        // 1. En el perfil sale el teléfono descifrado
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        Assert.Contains($"value=\"{DatosPrueba.TelefonoAdmin}\"", await _web.GetHtml("/Usuarios/Perfil"));
+        string perfil = await _web.GetHtml("/Usuarios/Perfil");
+        Assert.IsTrue(perfil.Contains("value=\"" + DatosPrueba.TelefonoAdmin + "\""));
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Usuarios/Perfil", "GuardarPerfil", new()
-        {
-            ["EMail"] = DatosPrueba.EmailAdmin,
-            ["Nombre"] = "Alex",
-            ["Apellidos"] = "Alumno",
-            ["Telefono"] = "611222333"
-        });
+        // 2. Lo cambiamos por otro
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Usuarios/Perfil", "GuardarPerfil", CamposPerfil("611222333"));
 
+        // 3. Se guarda cifrado y se puede descifrar con la clave
         Usuario admin = _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
         Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
-        Assert.DoesNotContain("611222333", admin.TelefonoCifrado);
+        Assert.IsFalse(admin.TelefonoCifrado.Contains("611222333"));
         Assert.AreEqual("611222333", admin.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
 
-    // un teléfono mal escrito no se guarda
+    // Un teléfono mal escrito no se guarda
     [TestMethod]
     public async Task IT18_Perfil_TelefonoNoValido()
     {
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Usuarios/Perfil", "GuardarPerfil", new()
-        {
-            ["EMail"] = DatosPrueba.EmailAdmin,
-            ["Nombre"] = "Alex",
-            ["Apellidos"] = "Alumno",
-            ["Telefono"] = "12ab"
-        });
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Usuarios/Perfil", "GuardarPerfil", CamposPerfil("12ab"));
+        string html = await ClienteWeb.Html(respuesta);
 
-        Assert.Contains("El teléfono debe tener 9 cifras.", await ClienteWeb.Html(respuesta));
-        Assert.AreEqual(DatosPrueba.TelefonoAdmin,
-            _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!.ObtenerTelefono(ClienteWeb.ClaveCifrado));
+        Assert.IsTrue(html.Contains("El teléfono debe tener 9 cifras."));
+
+        // Sigue teniendo el teléfono de antes
+        Usuario admin = _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
+        Assert.AreEqual(DatosPrueba.TelefonoAdmin, admin.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
 
-    //la descripción es opcional, se puede crear un proyecto sin ella
+    // La descripción no es obligatoria, se puede crear un proyecto sin ella
     [TestMethod]
     public async Task IT19_Admin_CreaProyectoSinDescripcion()
     {
         await _web.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
-        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", new()
-        {
-            ["Nombre"] = "Sin descripción",
-            ["Siglas"] = "SDESC",
-            ["Descripcion"] = ""
-        });
+        Dictionary<string, string> campos = CamposProyecto("Sin descripción", "SDESC", "");
+        HttpResponseMessage respuesta = await _web.EnviarFormulario("/Proyectos/Seleccionar", "Crear", campos);
 
         Assert.AreEqual(HttpStatusCode.Redirect, respuesta.StatusCode);
-        Assert.AreEqual(string.Empty, _web.Datos.Proyectos.Values.Single(p => p.Siglas == "SDESC").Descripcion);
+        Proyecto? creado = BuscarProyecto("SDESC");
+        Assert.IsNotNull(creado);
+        Assert.AreEqual(string.Empty, creado.Descripcion);
     }
 }

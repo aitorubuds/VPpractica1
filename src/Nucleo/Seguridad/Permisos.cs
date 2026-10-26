@@ -32,7 +32,7 @@ public static class Permisos
             return false;
         }
 
-        // Miramos si el área está entre los permisos del rol (sin mirar mayúsculas)
+        // Miramos si el área está entre los permisos del rol, sin mirar mayúsculas
         foreach (string permiso in rol.Permisos)
         {
             if (string.Equals(permiso, area, StringComparison.OrdinalIgnoreCase))
