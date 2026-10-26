@@ -5,8 +5,7 @@ using System.Collections.Generic;
 
 namespace Nucleo.Tests.Seguridad;
 
-// Pruebas de caja negra de ServicioHash según el E01 (ED-01 a ED-17)
-// La tabla con todos los casos está en docs/E01_Casos_de_Prueba.md
+// Pruebas de caja negra de ServicioHash
 [TestClass]
 public class ServicioHashTests
 {
@@ -20,7 +19,7 @@ public class ServicioHashTests
 
     #region Generar
 
-    // CP-01 (ED-01, ED-02, ED-05): con texto válido devuelve un ResultadoHash
+    //con texto válido devuelve un ResultadoHash
     [TestMethod]
     [DataRow("MiPassword123")]
     [DataRow("a")]
@@ -33,14 +32,14 @@ public class ServicioHashTests
         Assert.IsNotNull(resultado);
     }
 
-    // CP-02 (ED-03, ED-04): con null salta InvalidOperationException
+    //  con null salta InvalidOperationException
     [TestMethod]
     public void CP02_Generar_TextoNulo_LanzaExcepcion()
     {
         Assert.ThrowsExactly<InvalidOperationException>(() => _servicio.Generar(null));
     }
 
-    // CP-03 (ED-03, ED-04): vacío o solo espacios también salta InvalidOperationException
+    // vacío o solo espacios también salta InvalidOperationException
     [TestMethod]
     [DataRow("")]
     [DataRow(" ")]
@@ -52,7 +51,7 @@ public class ServicioHashTests
         Assert.ThrowsExactly<InvalidOperationException>(() => _servicio.Generar(texto));
     }
 
-    // CP-04 (ED-09): Hash y Sal vienen rellenos
+    //Hash y Sal vienen rellenos
     [TestMethod]
     public void CP04_Generar_HashYSalNoVacios()
     {
@@ -62,7 +61,7 @@ public class ServicioHashTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(resultado.Sal));
     }
 
-    // CP-05 (ED-09, ED-12): lo que devuelve Generar sirve para Verificar
+    //  lo que devuelve Generar sirve para Verificar
     [TestMethod]
     public void CP05_Generar_ResultadoValidoParaVerificar()
     {
@@ -71,7 +70,7 @@ public class ServicioHashTests
         Assert.IsTrue(_servicio.Verificar("MiPassword123", resultado.Hash, resultado.Sal));
     }
 
-    // CP-06 (ED-06, ED-07): dos llamadas con el mismo texto dan sales distintas
+    //  dos llamadas con el mismo texto dan sales distintas
     [TestMethod]
     public void CP06_Generar_MismoTexto_SalesDiferentes()
     {
@@ -81,7 +80,7 @@ public class ServicioHashTests
         Assert.AreNotEqual(resultado1.Sal, resultado2.Sal);
     }
 
-    // CP-07 (ED-08): dos llamadas con el mismo texto dan hashes distintos
+    //  dos llamadas con el mismo texto dan hashes distintos
     [TestMethod]
     public void CP07_Generar_MismoTexto_HashesDiferentes()
     {
@@ -91,7 +90,7 @@ public class ServicioHashTests
         Assert.AreNotEqual(resultado1.Hash, resultado2.Hash);
     }
 
-    // CP-08 (ED-06, ED-07): en 20 llamadas no se repite ninguna sal
+    // en 20 llamadas no se repite ninguna sal
     [TestMethod]
     public void CP08_Generar_VariasLlamadas_SalesUnicas()
     {
@@ -109,7 +108,7 @@ public class ServicioHashTests
 
     #region Verificar
 
-    // CP-09 (ED-10, ED-11, ED-12): texto correcto con su hash y sal -> true
+    //texto correcto con su hash y sal -> true
     [TestMethod]
     [DataRow("ClaveSecreta123")]
     [DataRow("a")]
@@ -121,7 +120,7 @@ public class ServicioHashTests
         Assert.IsTrue(_servicio.Verificar(texto, datos.Hash, datos.Sal));
     }
 
-    // CP-10 (ED-13): texto distinto al original -> false
+    //texto distinto al original -> false
     [TestMethod]
     [DataRow("ClaveCorrecta", "ClaveErronea")]
     [DataRow("ClaveCorrecta", "clavecorrecta")]
@@ -134,7 +133,7 @@ public class ServicioHashTests
         Assert.IsFalse(_servicio.Verificar(textoProbado, datos.Hash, datos.Sal));
     }
 
-    // CP-11 (ED-13): hash de otro texto -> false
+    //hash de otro texto -> false
     [TestMethod]
     public void CP11_Verificar_HashIncorrecto_DevuelveFalse()
     {
@@ -144,7 +143,7 @@ public class ServicioHashTests
         Assert.IsFalse(_servicio.Verificar("ClaveCorrecta", otro.Hash, datos.Sal));
     }
 
-    // CP-12 (ED-13): sal de otra generación -> false
+    //sal de otra generación -> false
     [TestMethod]
     public void CP12_Verificar_SalIncorrecta_DevuelveFalse()
     {
@@ -154,7 +153,7 @@ public class ServicioHashTests
         Assert.IsFalse(_servicio.Verificar("ClaveCorrecta", datos.Hash, otro.Sal));
     }
 
-    // CP-13, CP-14 y CP-15 (ED-14): algún parámetro nulo, vacío o con espacios -> false
+    // algún parámetro nulo, vacío o con espacios -> false
     // posicion: 0 = texto, 1 = hash, 2 = sal
     [TestMethod]
     [DataRow(0, null, DisplayName = "CP-13 texto nulo")]
@@ -178,7 +177,7 @@ public class ServicioHashTests
         Assert.IsFalse(resultado);
     }
 
-    // CP-16 (ED-15, ED-16): hash con formato no válido -> false sin excepción
+    //hash con formato no válido -> false sin excepción
     [TestMethod]
     [DataRow("no-es-un-hash-valido!!!")]
     [DataRow("abc")]
@@ -202,7 +201,7 @@ public class ServicioHashTests
         Assert.IsFalse(_servicio.Verificar("MiTexto", datos.Hash, sal));
     }
 
-    // CP-18 (ED-17): Base64 correcto pero de tamaño que no toca -> false sin excepción
+    // Base64 correcto pero de tamaño que no toca -> false sin excepción
     [TestMethod]
     [DataRow("AAAA", "AAAA")]
     [DataRow("AA==", "AA==")]
@@ -216,7 +215,7 @@ public class ServicioHashTests
         Assert.IsFalse(resultado);
     }
 
-    // Prueba extra (no está en el E01): sobrecarga con el objeto ResultadoHash
+    //sobrecarga con el objeto ResultadoHash
     [TestMethod]
     public void Extra_Verificar_ConObjetoResultadoHash()
     {

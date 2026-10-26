@@ -88,7 +88,7 @@ public class IndexModel : PageModel
         ErrorMessage =
             "La descripción no puede superar 500 caracteres.")]
     [Display(Name = "Descripción")]
-    // Opcional: con string (no anulable) ASP.NET la trataba como obligatoria (DEF-05)
+    // Opcional: con string (no anulable) ASP.NET la trataba como obligatoria
     public string? Descripcion
     {
         get;

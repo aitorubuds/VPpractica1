@@ -3,10 +3,10 @@ using System;
 
 namespace Nucleo.Seguridad;
 
-// Permisos por área y por proyecto según el rol del usuario (acta del cliente, PR1 p.4)
+// Permisos por área y por proyecto según el rol del usuario
 public static class Permisos
 {
-    // Áreas de la aplicación (coinciden con Rol.Permisos)
+    // Áreas de la aplicación
     public const string AreaProyectos = "Proyectos";
     public const string AreaUsuarios = "Usuarios";
     public const string AreaLog = "Log";
@@ -33,7 +33,7 @@ public static class Permisos
         return rol.Permisos.Contains(area, StringComparer.OrdinalIgnoreCase);
     }
 
-    // Un usuario solo ve los proyectos a los que está asignado (el administrador, todos)
+    // Un usuario solo ve los proyectos a los que está asignado
     public static bool PuedeVerProyecto(Usuario? usuario, Proyecto? proyecto)
     {
         if (usuario is null || proyecto is null)
@@ -44,7 +44,7 @@ public static class Permisos
         return usuario.EsAdministrador || proyecto.UsuariosAsignados.Contains(usuario.Id);
     }
 
-    // Solo el administrador gestiona (crea) proyectos
+    // Solo el administrador crea proyectos
     public static bool PuedeCrearProyectos(Usuario? usuario)
     {
         return usuario is not null && usuario.EsAdministrador && usuario.Activo && !usuario.Bloqueado;

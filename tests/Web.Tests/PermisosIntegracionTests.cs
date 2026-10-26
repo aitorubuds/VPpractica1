@@ -16,7 +16,7 @@ public class PermisosIntegracionTests
     [TestCleanup]
     public void Limpiar() => _web.Dispose();
 
-    // IT-10: el Log solo lo ve el administrador; a los demás se les deniega y se audita
+    // el Log solo lo ve el administrador; a los demás se les deniega y se audita
     [TestMethod]
     [DataRow(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin, true)]
     [DataRow(DatosPrueba.EmailTester, DatosPrueba.ClaveTester, false)]
@@ -38,7 +38,7 @@ public class PermisosIntegracionTests
         Assert.IsTrue(_web.Datos.Logs.Any(l => l.Accion == Auditoria.AccesoDenegado && l.NombreUsuario == email));
     }
 
-    // IT-11: el invitado no tiene el área Proyectos
+    //el invitado no tiene el área Proyectos
     [TestMethod]
     public async Task IT11_Proyectos_InvitadoDenegado()
     {
@@ -71,7 +71,7 @@ public class PermisosIntegracionTests
         Assert.DoesNotContain("handler=Crear", htmlTester);
     }
 
-    // IT-13: el administrador crea un proyecto y queda guardado en Datos
+    //el administrador crea un proyecto y queda guardado en Datos
     [TestMethod]
     public async Task IT13_Admin_CreaProyecto()
     {
@@ -90,7 +90,7 @@ public class PermisosIntegracionTests
         Assert.Contains("El proyecto se ha creado y seleccionado.", await _web.GetHtml("/Proyectos/Seleccionar"));
     }
 
-    // IT-14: siglas repetidas (sin mirar mayúsculas) no se dan de alta
+    // siglas repetidas (sin mirar mayúsculas) no se dan de alta
     [TestMethod]
     public async Task IT14_Admin_SiglasRepetidas()
     {
@@ -107,7 +107,7 @@ public class PermisosIntegracionTests
         Assert.HasCount(DatosPrueba.NumProyectos, _web.Datos.Proyectos);
     }
 
-    // IT-15: aunque se salte la interfaz, un no administrador no puede crear proyectos
+    //aunque se salte la interfaz, un no administrador no puede crear proyectos
     [TestMethod]
     public async Task IT15_Tester_NoPuedeCrearProyecto()
     {
@@ -125,7 +125,7 @@ public class PermisosIntegracionTests
         Assert.IsTrue(_web.Datos.Logs.Any(l => l.Accion == Auditoria.AccesoDenegado));
     }
 
-    // IT-16: seleccionar un proyecto propio funciona; uno ajeno o inactivo no
+    //seleccionar un proyecto propio funciona; uno ajeno o inactivo no
     [TestMethod]
     [DataRow(2, true, DisplayName = "IT-16 ACTFIS (asignado)")]
     [DataRow(3, false, DisplayName = "IT-16 ARCH (no asignado)")]
@@ -149,7 +149,7 @@ public class PermisosIntegracionTests
         }
     }
 
-    // IT-17: el teléfono se ve descifrado en el perfil y al cambiarlo se guarda cifrado en Datos
+    // el teléfono se ve descifrado en el perfil y al cambiarlo se guarda cifrado en Datos
     [TestMethod]
     public async Task IT17_Perfil_TelefonoCifrado()
     {
@@ -170,7 +170,7 @@ public class PermisosIntegracionTests
         Assert.AreEqual("611222333", admin.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
 
-    // IT-18: un teléfono mal escrito no se guarda
+    // un teléfono mal escrito no se guarda
     [TestMethod]
     public async Task IT18_Perfil_TelefonoNoValido()
     {
@@ -189,7 +189,7 @@ public class PermisosIntegracionTests
             _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
 
-    // IT-19: la descripción es opcional, se puede crear un proyecto sin ella (DEF-05, lo encontró Selenium)
+    //la descripción es opcional, se puede crear un proyecto sin ella (DEF-05, lo encontró Selenium)
     [TestMethod]
     public async Task IT19_Admin_CreaProyectoSinDescripcion()
     {

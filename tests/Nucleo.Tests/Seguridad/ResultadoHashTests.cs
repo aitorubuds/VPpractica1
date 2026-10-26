@@ -3,11 +3,11 @@ using Nucleo.Seguridad;
 
 namespace Nucleo.Tests.Seguridad;
 
-// Pruebas de caja negra de ResultadoHash según el E01 (ED-18 a ED-20)
+// Pruebas de caja negra de ResultadoHash
 [TestClass]
 public class ResultadoHashTests
 {
-    // CP-19 (ED-18, ED-19): tiene las propiedades Hash y Sal y guardan lo que se les da
+    //tiene las propiedades Hash y Sal y guardan lo que se les da
     [TestMethod]
     public void CP19_ResultadoHash_GuardaHashYSal()
     {
@@ -17,7 +17,7 @@ public class ResultadoHashTests
         Assert.AreEqual("sal-de-prueba", resultado.Sal);
     }
 
-    // CP-20 (ED-20): todo ResultadoHash que devuelve el servicio tiene Hash y Sal no nulos ni vacíos
+    //todo ResultadoHash que devuelve el servicio tiene Hash y Sal no nulos ni vacíos
     [TestMethod]
     [DataRow("MiPassword123")]
     [DataRow("a")]
