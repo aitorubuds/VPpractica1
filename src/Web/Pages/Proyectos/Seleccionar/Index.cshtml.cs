@@ -289,10 +289,7 @@ public class IndexModel : PageModel
             return RedirectToPage("/Login/Index");
         }
 
-        /*
-         * Sustituye ToString() por la propiedad real
-         * si Usuario tiene Nombre o NombreCompleto.
-         */
+        // Nombre y apellidos para el menú de la cabecera
         NombreUsuario = usuario.ToString();
 
         // Hace falta permiso del área Proyectos (el invitado no lo tiene)

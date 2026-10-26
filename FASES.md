@@ -57,9 +57,9 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 - [X] **Fase 07 — Pruebas de Caja Negra de `ServicioHash` (Parte 1: Entradas Inválidas)**
   - Crear `tests/Nucleo.Tests/Seguridad/ServicioHashTests.cs`.
   - Implementar las pruebas para las especificaciones ED-01 a ED-04:
-    - `Generar(null)` $\to$ lanza excepción.
-    - `Generar("")` $\to$ lanza excepción.
-    - `Generar("   ")` $\to$ lanza excepción.
+    - `Generar(null)` → lanza excepción.
+    - `Generar("")` → lanza excepción.
+    - `Generar("   ")` → lanza excepción.
   - *Criterio de éxito:* Tests verificados con `Assert.ThrowsExactly<InvalidOperationException>`.
 
 - [X] **Fase 08 — Pruebas de Caja Negra de `ServicioHash` (Parte 2: Generación y Verificación)**
@@ -111,8 +111,8 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [X] **Fase 12 — Consolidación de `Datos.cs`**
   - Verificar la lógica de asignación autoincremental de identificadores:
-    - Si `Id < 0` $\to$ asigna `++_ultimoId` e inserta.
-    - Si `Id >= 0` y existe $\to$ actualiza la entidad; si no existe $\to$ devuelve `null`.
+    - Si `Id < 0` → asigna `++_ultimoId` e inserta.
+    - Si `Id >= 0` y existe → actualiza la entidad; si no existe → devuelve `null`.
   - Verificar operaciones CRUD de `Usuario`, `Rol`, `Proyecto` y registro de `EntradaLog`.
   - Verificar que `Reiniciar()` vacía todas las colecciones y restablece los contadores a 0.
   - *Criterio de éxito:* `Datos.cs` listo para pruebas sin persistencia real.
@@ -139,13 +139,13 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
   - Probar el ciclo completo del sistema:
     1. Creación de un usuario con contraseña segura.
     2. Guardado en `Datos` con asignación de ID.
-    3. Simulación de 3 intentos fallidos de login $\to$ verificar bloqueo en persistencia.
+    3. Simulación de 3 intentos fallidos de login → verificar bloqueo en persistencia.
     4. Registro automático de la auditoría en `EntradaLog`.
     5. Desbloqueo y cambio de contraseña exitoso.
   - *Criterio de éxito:* Flujo integral superado con aserciones en todas las capas.
 
-- [X] **Fase 15 — Auditoría y Verificación de Cobertura ($\ge 90\%$)**
-  - En Visual Studio: Menú `Prueba` $\to$ `Analizar cobertura de código para todas las pruebas`.
+- [X] **Fase 15 — Auditoría y Verificación de Cobertura (≥ 90 %)**
+  - En Visual Studio: Menú `Prueba` → `Analizar cobertura de código para todas las pruebas`.
   - Verificar que el recubrimiento de líneas y ramas en la librería `Nucleo` supera el **90%** (requisito del profesor para la máxima nota).
   - Identificar líneas o ramas no cubiertas y añadir los casos de prueba necesarios.
   - Documentar el análisis y lo insuficientemente probado en `docs/Analisis_Cobertura.md`.
@@ -183,7 +183,7 @@ Este documento sirve como lista de control (*checklist*) operativa para el segui
 
 - [ ] **Fase 19 — Matriz de Trazabilidad y Modelado UML**
   - Elaborar la tabla de trazabilidad completa:
-    $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow \text{Requisitos / HU (RE)} \longrightarrow \text{Criterios Aceptación (CA)} \longrightarrow \text{Casos de Prueba (CP)}$$
+    Actores (ACT) → Casos de Uso (CU) → Requisitos / HU (RE) → Criterios Aceptación (CA) → Casos de Prueba (CP)
   - Generar los diagramas UML (formato estándar, recordando no incluir diagramas E-R):
     - Diagrama de Paquetes de alto nivel.
     - Diagrama de Clases de diseño (incluyendo clases de pruebas unitarias).
