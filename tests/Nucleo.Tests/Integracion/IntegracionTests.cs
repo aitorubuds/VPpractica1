@@ -88,74 +88,136 @@ public class IntegracionTests
         Assert.IsTrue(usuarioActualizado.ComprobarContrasena("NuevaClaveSuperSegura999!"));
     }
 
-    // Con los datos de prueba, cada rol tiene acceso solo a sus áreas (Datos + Permisos)
+    // Con los datos de prueba, el administrador entra en proyectos, perfil y log
     [TestMethod]
-    [DataRow(DatosPrueba.EmailAdmin, true, true, true)]
-    [DataRow(DatosPrueba.EmailTester, true, true, false)]
-    [DataRow(DatosPrueba.EmailInvitado, false, true, false)]
-    public void Flujo_PermisosSegunRol(string email, bool proyectos, bool perfil, bool log)
+    public void Flujo_PermisosAdmin()
     {
+        // 1. Cargamos los datos de prueba y buscamos al administrador
         IDatos datos = DatosPrueba.Crear(ServicioCifrado.GenerarClave());
-        Usuario u = datos.LeerUsuario(email)!;
-        Rol? rol = datos.LeerRol(u.RolId);
+        Usuario admin = datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
+        Rol? rol = datos.LeerRol(admin.RolId);
 
-        Assert.AreEqual(proyectos, Permisos.TieneAcceso(u, rol, Permisos.AreaProyectos));
-        Assert.AreEqual(perfil, Permisos.TieneAcceso(u, rol, Permisos.AreaPerfil));
-        Assert.AreEqual(log, Permisos.TieneAcceso(u, rol, Permisos.AreaLog));
+        // 2. Comprobamos a qué áreas tiene acceso
+        Assert.IsTrue(Permisos.TieneAcceso(admin, rol, Permisos.AreaProyectos));
+        Assert.IsTrue(Permisos.TieneAcceso(admin, rol, Permisos.AreaPerfil));
+        Assert.IsTrue(Permisos.TieneAcceso(admin, rol, Permisos.AreaLog));
     }
 
-    // Al borrar el rol del tester se queda sin rol y pierde el acceso (cascada de Datos + Permisos)
+    // Con los datos de prueba, el tester entra en proyectos y perfil pero no en el log
+    [TestMethod]
+    public void Flujo_PermisosTester()
+    {
+        // 1. Cargamos los datos de prueba y buscamos al tester
+        IDatos datos = DatosPrueba.Crear(ServicioCifrado.GenerarClave());
+        Usuario tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
+        Rol? rol = datos.LeerRol(tester.RolId);
+
+        // 2. Comprobamos a qué áreas tiene acceso
+        Assert.IsTrue(Permisos.TieneAcceso(tester, rol, Permisos.AreaProyectos));
+        Assert.IsTrue(Permisos.TieneAcceso(tester, rol, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(tester, rol, Permisos.AreaLog));
+    }
+
+    // Con los datos de prueba, el invitado solo entra en su perfil
+    [TestMethod]
+    public void Flujo_PermisosInvitado()
+    {
+        // 1. Cargamos los datos de prueba y buscamos al invitado
+        IDatos datos = DatosPrueba.Crear(ServicioCifrado.GenerarClave());
+        Usuario invitado = datos.LeerUsuario(DatosPrueba.EmailInvitado)!;
+        Rol? rol = datos.LeerRol(invitado.RolId);
+
+        // 2. Comprobamos a qué áreas tiene acceso
+        Assert.IsFalse(Permisos.TieneAcceso(invitado, rol, Permisos.AreaProyectos));
+        Assert.IsTrue(Permisos.TieneAcceso(invitado, rol, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(invitado, rol, Permisos.AreaLog));
+    }
+
+    // Si borramos el rol del tester se queda sin rol y ya no puede entrar
     [TestMethod]
     public void Flujo_BorrarRol_QuitaAcceso()
     {
+        // 1. Cargamos los datos de prueba y buscamos el rol del tester
         IDatos datos = DatosPrueba.Crear(ServicioCifrado.GenerarClave());
         Usuario tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
         int idRol = tester.RolId;
 
+        // 2. Borramos ese rol
         datos.EliminarRol(idRol);
-        tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
 
+        // 3. Volvemos a leer al tester: se ha quedado sin rol
+        tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
         Assert.AreEqual(0, tester.RolId);
-        Assert.IsFalse(Permisos.TieneAcceso(tester, datos.LeerRol(tester.RolId), Permisos.AreaProyectos));
+
+        // 4. Sin rol ya no puede entrar en proyectos
+        Rol? rol = datos.LeerRol(tester.RolId);
+        Assert.IsFalse(Permisos.TieneAcceso(tester, rol, Permisos.AreaProyectos));
     }
 
     // Al borrar al tester deja de estar asignado a sus proyectos, pero su historial de log se mantiene
     [TestMethod]
     public void Flujo_BorrarUsuario_LoQuitaDeProyectos()
     {
+        // 1. Cargamos los datos de prueba y el tester inicia sesión
         IDatos datos = DatosPrueba.Crear(ServicioCifrado.GenerarClave());
         Usuario tester = datos.LeerUsuario(DatosPrueba.EmailTester)!;
         Auditoria.Registrar(datos, Auditoria.NivelInfo, Auditoria.LoginCorrecto, "Entra", tester);
         int logsAntes = datos.Logs.Count;
 
+        // 2. Borramos al tester
         datos.EliminarUsuario(tester.Id);
 
-        Assert.IsFalse(datos.Proyectos.Values.Any(p => Permisos.PuedeVerProyecto(tester, p)));
-        Assert.HasCount(logsAntes, datos.Logs);
-        Assert.IsTrue(datos.Logs.Any(l => l.UsuarioId == tester.Id));
+        // 3. Ya no puede ver ningún proyecto
+        foreach (Proyecto p in datos.Proyectos.Values)
+        {
+            Assert.IsFalse(Permisos.PuedeVerProyecto(tester, p));
+        }
+
+        // 4. Los logs siguen ahí, incluidos los suyos
+        Assert.AreEqual(logsAntes, datos.Logs.Count);
+
+        bool tieneLogs = false;
+        foreach (EntradaLog log in datos.Logs)
+        {
+            if (log.UsuarioId == tester.Id)
+            {
+                tieneLogs = true;
+            }
+        }
+        Assert.IsTrue(tieneLogs);
     }
 
-    // Login completo sin web: fallos auditados, bloqueo, desbloqueo, el teléfono cifrado sigue legible
+    // Probamos el login entero: falla 3 veces, se bloquea, lo desbloqueamos y el teléfono se sigue leyendo
     [TestMethod]
     public void Flujo_LoginAuditadoYTelefono()
     {
+        // 1. Cargamos los datos de prueba y buscamos al administrador
         string clave = ServicioCifrado.GenerarClave();
         IDatos datos = DatosPrueba.Crear(clave);
         Usuario admin = datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
         int logsAntes = datos.Logs.Count;
 
-        for (int i = 0; i < 3; i++)
-        {
-            Assert.IsFalse(admin.ComprobarContrasena("Mala1234!"));
-            Auditoria.Registrar(datos, Auditoria.NivelAviso, Auditoria.LoginFallido, "Fallo", admin);
-        }
+        // 2. Falla 3 veces y cada fallo queda en el log
+        Assert.IsFalse(admin.ComprobarContrasena("Mala1234!"));
+        Auditoria.Registrar(datos, Auditoria.NivelAviso, Auditoria.LoginFallido, "Fallo", admin);
+        Assert.IsFalse(admin.ComprobarContrasena("Mala1234!"));
+        Auditoria.Registrar(datos, Auditoria.NivelAviso, Auditoria.LoginFallido, "Fallo", admin);
+        Assert.IsFalse(admin.ComprobarContrasena("Mala1234!"));
+        Auditoria.Registrar(datos, Auditoria.NivelAviso, Auditoria.LoginFallido, "Fallo", admin);
+
+        // Verificamos que se ha bloqueado
         Assert.IsTrue(datos.LeerUsuario(DatosPrueba.EmailAdmin)!.Bloqueado);
 
+        // 3. Lo desbloqueamos y guardamos
         admin.Desbloquear();
         datos.GuardarUsuario(admin);
 
-        Assert.IsTrue(datos.LeerUsuario(DatosPrueba.EmailAdmin)!.ComprobarContrasena(DatosPrueba.ClaveAdmin));
-        Assert.HasCount(logsAntes + 3, datos.Logs);
+        // 4. Ya puede entrar con su clave
+        Usuario recuperado = datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
+        Assert.IsTrue(recuperado.ComprobarContrasena(DatosPrueba.ClaveAdmin));
+
+        // 5. Hay 3 logs nuevos y el teléfono se sigue leyendo
+        Assert.AreEqual(logsAntes + 3, datos.Logs.Count);
         Assert.AreEqual(DatosPrueba.TelefonoAdmin, admin.ObtenerTelefono(clave));
     }
 }

@@ -5,71 +5,127 @@ using System.Collections.Generic;
 
 namespace Nucleo.Tests.Seguridad;
 
-// Permisos por área, por proyecto y del administrador (acta del cliente)
+// Pruebas de los permisos por área, por proyecto y del administrador
 [TestClass]
 public class PermisosTests
 {
-    private static readonly Rol RolTester = new Rol
+    // Función auxiliar para crear el rol Tester con acceso a proyectos y perfil
+    private static Rol CrearRolTester()
     {
-        Id = 2,
-        Nombre = "Tester",
-        Permisos = new List<string> { Permisos.AreaProyectos, Permisos.AreaPerfil }
-    };
+        Rol r = new Rol();
+        r.Id = 2;
+        r.Nombre = "Tester";
+        r.Permisos = new List<string> { Permisos.AreaProyectos, Permisos.AreaPerfil };
+        return r;
+    }
 
+    // Función auxiliar para crear un usuario de prueba con el rol que digamos
     private static Usuario CrearUsuario(int rolId = 2, bool admin = false)
     {
-        return new Usuario { Id = 5, Cuenta = "u", RolId = rolId, EsAdministrador = admin };
+        Usuario u = new Usuario();
+        u.Id = 5;
+        u.Cuenta = "u";
+        u.RolId = rolId;
+        u.EsAdministrador = admin;
+        return u;
     }
 
-    #region TieneAcceso
-
-    // El rol da acceso a sus áreas y no a las demás
+    // El rol Tester da acceso al área de proyectos
     [TestMethod]
-    [DataRow(Permisos.AreaProyectos, true)]
-    [DataRow(Permisos.AreaPerfil, true)]
-    [DataRow("proyectos", true)]
-    [DataRow(Permisos.AreaLog, false)]
-    [DataRow(Permisos.AreaUsuarios, false)]
-    public void TieneAcceso_SegunPermisosDelRol(string area, bool esperado)
+    public void TieneAcceso_AreaProyectos()
     {
-        Assert.AreEqual(esperado, Permisos.TieneAcceso(CrearUsuario(), RolTester, area));
+        bool resultado = Permisos.TieneAcceso(CrearUsuario(), CrearRolTester(), Permisos.AreaProyectos);
+
+        Assert.IsTrue(resultado);
     }
 
-    // El administrador entra en cualquier área aunque no tenga rol
+    // El rol Tester da acceso al área de perfil
     [TestMethod]
-    [DataRow(Permisos.AreaLog)]
-    [DataRow(Permisos.AreaUsuarios)]
-    public void TieneAcceso_Administrador_Siempre(string area)
+    public void TieneAcceso_AreaPerfil()
     {
-        Assert.IsTrue(Permisos.TieneAcceso(CrearUsuario(rolId: 0, admin: true), null, area));
+        bool resultado = Permisos.TieneAcceso(CrearUsuario(), CrearRolTester(), Permisos.AreaPerfil);
+
+        Assert.IsTrue(resultado);
     }
 
-    // Sin usuario, sin rol, con un rol que no es el suyo, inactivo o bloqueado -> no entra
+    // El área se compara sin mirar mayúsculas
+    [TestMethod]
+    public void TieneAcceso_AreaEnMinusculas()
+    {
+        bool resultado = Permisos.TieneAcceso(CrearUsuario(), CrearRolTester(), "proyectos");
+
+        Assert.IsTrue(resultado);
+    }
+
+    // El rol Tester no da acceso al log
+    [TestMethod]
+    public void TieneAcceso_AreaLog()
+    {
+        bool resultado = Permisos.TieneAcceso(CrearUsuario(), CrearRolTester(), Permisos.AreaLog);
+
+        Assert.IsFalse(resultado);
+    }
+
+    // El rol Tester no da acceso a la gestión de usuarios
+    [TestMethod]
+    public void TieneAcceso_AreaUsuarios()
+    {
+        bool resultado = Permisos.TieneAcceso(CrearUsuario(), CrearRolTester(), Permisos.AreaUsuarios);
+
+        Assert.IsFalse(resultado);
+    }
+
+    // El administrador entra en el log aunque no tenga rol
+    [TestMethod]
+    public void TieneAcceso_AdminLog()
+    {
+        Usuario admin = CrearUsuario(rolId: 0, admin: true);
+
+        bool resultado = Permisos.TieneAcceso(admin, null, Permisos.AreaLog);
+
+        Assert.IsTrue(resultado);
+    }
+
+    // El administrador entra en la gestión de usuarios aunque no tenga rol
+    [TestMethod]
+    public void TieneAcceso_AdminUsuarios()
+    {
+        Usuario admin = CrearUsuario(rolId: 0, admin: true);
+
+        bool resultado = Permisos.TieneAcceso(admin, null, Permisos.AreaUsuarios);
+
+        Assert.IsTrue(resultado);
+    }
+
+    // Sin usuario, sin rol, con un rol que no es el suyo, inactivo o bloqueado no entra
     [TestMethod]
     public void TieneAcceso_CasosDenegados()
     {
+        Rol tester = CrearRolTester();
         Usuario inactivo = CrearUsuario();
         inactivo.Activo = false;
         Usuario bloqueado = CrearUsuario(admin: true);
         bloqueado.Bloqueado = true;
 
-        Assert.IsFalse(Permisos.TieneAcceso(null, RolTester, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(null, tester, Permisos.AreaPerfil));
         Assert.IsFalse(Permisos.TieneAcceso(CrearUsuario(), null, Permisos.AreaPerfil));
-        Assert.IsFalse(Permisos.TieneAcceso(CrearUsuario(rolId: 3), RolTester, Permisos.AreaPerfil));
-        Assert.IsFalse(Permisos.TieneAcceso(inactivo, RolTester, Permisos.AreaPerfil));
-        Assert.IsFalse(Permisos.TieneAcceso(bloqueado, RolTester, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(CrearUsuario(rolId: 3), tester, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(inactivo, tester, Permisos.AreaPerfil));
+        Assert.IsFalse(Permisos.TieneAcceso(bloqueado, tester, Permisos.AreaPerfil));
     }
 
-    #endregion
-
-    #region Proyectos
-
-    // Solo ve los proyectos donde está asignado; el administrador ve todos
+    // Solo ve los proyectos donde está asignado, menos el administrador que ve todos
     [TestMethod]
     public void PuedeVerProyecto_SegunAsignacion()
     {
-        Proyecto asignado = new Proyecto { Id = 1, UsuariosAsignados = new List<int> { 5 } };
-        Proyecto ajeno = new Proyecto { Id = 2, UsuariosAsignados = new List<int> { 9 } };
+        // Un proyecto donde está el usuario 5 y otro donde no
+        Proyecto asignado = new Proyecto();
+        asignado.Id = 1;
+        asignado.UsuariosAsignados = new List<int> { 5 };
+
+        Proyecto ajeno = new Proyecto();
+        ajeno.Id = 2;
+        ajeno.UsuariosAsignados = new List<int> { 9 };
 
         Assert.IsTrue(Permisos.PuedeVerProyecto(CrearUsuario(), asignado));
         Assert.IsFalse(Permisos.PuedeVerProyecto(CrearUsuario(), ajeno));
@@ -93,6 +149,4 @@ public class PermisosTests
         Assert.IsFalse(Permisos.PuedeCrearProyectos(adminBloqueado));
         Assert.IsFalse(Permisos.PuedeCrearProyectos(null));
     }
-
-    #endregion
 }

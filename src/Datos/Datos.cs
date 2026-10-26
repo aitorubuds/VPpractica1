@@ -6,24 +6,46 @@ namespace Datos;
 
 public class Datos : IDatos
 {
-    private readonly Dictionary<int, Usuario> _usuarios = new();
-    private readonly Dictionary<int, Rol> _roles = new();
-    private readonly Dictionary<int, Proyecto> _proyectos = new();
-    private readonly List<EntradaLog> _logs = new();
+    private readonly Dictionary<int, Usuario> _usuarios = new Dictionary<int, Usuario>();
+    private readonly Dictionary<int, Rol> _roles = new Dictionary<int, Rol>();
+    private readonly Dictionary<int, Proyecto> _proyectos = new Dictionary<int, Proyecto>();
+    private readonly List<EntradaLog> _logs = new List<EntradaLog>();
     private int _ultimoIdUsuario = 0;
     private int _ultimoIdRol = 0;
     private int _ultimoIdProyecto = 0;
 
-    // Se devuelven copias para que desde fuera no se pueda tocar el almacenamiento interno
-    public Dictionary<int, Usuario> Usuarios => new(_usuarios);
-    public Dictionary<int, Rol> Roles => new(_roles);
-    public Dictionary<int, Proyecto> Proyectos => new(_proyectos);
-    public List<EntradaLog> Logs => new(_logs);
+    // Devolvemos copias para que desde fuera no puedan cambiar los datos
+    public Dictionary<int, Usuario> Usuarios
+    {
+        get { return new Dictionary<int, Usuario>(_usuarios); }
+    }
 
+    public Dictionary<int, Rol> Roles
+    {
+        get { return new Dictionary<int, Rol>(_roles); }
+    }
+
+    public Dictionary<int, Proyecto> Proyectos
+    {
+        get { return new Dictionary<int, Proyecto>(_proyectos); }
+    }
+
+    public List<EntradaLog> Logs
+    {
+        get { return new List<EntradaLog>(_logs); }
+    }
+
+    // Guardar un usuario nuevo o actualizar uno que ya existe
     public Usuario? GuardarUsuario(Usuario usuario)
     {
+        // Sin usuario no hay nada que guardar
+        if (usuario == null)
+        {
+            return null;
+        }
+
         // Si el código no existe no se puede actualizar
-        if (usuario is null || (usuario.Id >= 0 && !_usuarios.ContainsKey(usuario.Id)))
+        if (usuario.Id >= 0 && !_usuarios.ContainsKey(usuario.Id))
         {
             return null;
         }
@@ -34,40 +56,59 @@ public class Datos : IDatos
             return null;
         }
 
+        // Si es nuevo le damos el siguiente Id
         if (usuario.Id < 0)
         {
-            usuario.Id = ++_ultimoIdUsuario;
+            _ultimoIdUsuario++;
+            usuario.Id = _ultimoIdUsuario;
         }
 
         _usuarios[usuario.Id] = usuario;
         return usuario;
     }
 
+    // Buscar un usuario por su código
     public Usuario? LeerUsuario(int idUsuario)
     {
-        return _usuarios.GetValueOrDefault(idUsuario);
+        if (_usuarios.ContainsKey(idUsuario))
+        {
+            return _usuarios[idUsuario];
+        }
+
+        return null;
     }
 
+    // Buscar un usuario por su email
     public Usuario? LeerUsuario(string eMail)
     {
-        // Sin email no se busca: si no, "" encontraría a los usuarios sin email
+        // Si el email está vacío no buscamos, porque si no saldrían los usuarios sin email
         if (string.IsNullOrWhiteSpace(eMail))
         {
             return null;
         }
 
         // El email no distingue mayúsculas
-        return _usuarios.Values.FirstOrDefault(
-            u => string.Equals(u.EMail, eMail, StringComparison.OrdinalIgnoreCase));
+        foreach (Usuario u in _usuarios.Values)
+        {
+            if (string.Equals(u.EMail, eMail, StringComparison.OrdinalIgnoreCase))
+            {
+                return u;
+            }
+        }
+
+        return null;
     }
 
+    // Borrar un usuario: devuelve el usuario borrado o null si no existía
     public Usuario? EliminarUsuario(int idUsuario)
     {
-        // Devuelve el usuario borrado o null si no existía
-        if (!_usuarios.Remove(idUsuario, out Usuario? borrado))
+        if (!_usuarios.ContainsKey(idUsuario))
         {
             return null;
         }
+
+        Usuario borrado = _usuarios[idUsuario];
+        _usuarios.Remove(idUsuario);
 
         // Lo quitamos también de los proyectos donde estaba asignado
         foreach (Proyecto proyecto in _proyectos.Values)
@@ -79,25 +120,36 @@ public class Datos : IDatos
         return borrado;
     }
 
+    // Comprobar si otro usuario distinto ya tiene ese email
     private bool EmailEnUso(string eMail, int idUsuario)
     {
         Usuario? otro = LeerUsuario(eMail);
-        return otro is not null && otro.Id != idUsuario;
+
+        if (otro == null)
+        {
+            return false;
+        }
+
+        return otro.Id != idUsuario;
     }
 
+    // Guardar un rol nuevo o actualizar uno que ya existe
     public Rol? GuardarRol(Rol rol)
     {
-        if (rol is null)
+        if (rol == null)
         {
             return null;
         }
 
         if (rol.Id < 0)
         {
-            rol.Id = ++_ultimoIdRol;
+            // Si es nuevo le damos el siguiente Id
+            _ultimoIdRol++;
+            rol.Id = _ultimoIdRol;
         }
         else if (!_roles.ContainsKey(rol.Id))
         {
+            // Si el código no existe no se puede actualizar
             return null;
         }
 
@@ -105,17 +157,27 @@ public class Datos : IDatos
         return rol;
     }
 
+    // Buscar un rol por su código
     public Rol? LeerRol(int idRol)
     {
-        return _roles.GetValueOrDefault(idRol);
+        if (_roles.ContainsKey(idRol))
+        {
+            return _roles[idRol];
+        }
+
+        return null;
     }
 
+    // Borrar un rol: devuelve el rol borrado o null si no existía
     public Rol? EliminarRol(int idRol)
     {
-        if (!_roles.Remove(idRol, out Rol? borrado))
+        if (!_roles.ContainsKey(idRol))
         {
             return null;
         }
+
+        Rol borrado = _roles[idRol];
+        _roles.Remove(idRol);
 
         // Los usuarios que tenían ese rol se quedan sin rol (0)
         foreach (Usuario usuario in _usuarios.Values)
@@ -129,19 +191,23 @@ public class Datos : IDatos
         return borrado;
     }
 
+    // Guardar un proyecto nuevo o actualizar uno que ya existe
     public Proyecto? GuardarProyecto(Proyecto proyecto)
     {
-        if (proyecto is null)
+        if (proyecto == null)
         {
             return null;
         }
 
         if (proyecto.Id < 0)
         {
-            proyecto.Id = ++_ultimoIdProyecto;
+            // Si es nuevo le damos el siguiente Id
+            _ultimoIdProyecto++;
+            proyecto.Id = _ultimoIdProyecto;
         }
         else if (!_proyectos.ContainsKey(proyecto.Id))
         {
+            // Si el código no existe no se puede actualizar
             return null;
         }
 
@@ -149,26 +215,44 @@ public class Datos : IDatos
         return proyecto;
     }
 
+    // Buscar un proyecto por su código
     public Proyecto? LeerProyecto(int idProyecto)
     {
-        return _proyectos.GetValueOrDefault(idProyecto);
+        if (_proyectos.ContainsKey(idProyecto))
+        {
+            return _proyectos[idProyecto];
+        }
+
+        return null;
     }
 
+    // Borrar un proyecto: devuelve el proyecto borrado o null si no existía
     public Proyecto? EliminarProyecto(int idProyecto)
     {
-        _proyectos.Remove(idProyecto, out Proyecto? borrado);
+        if (!_proyectos.ContainsKey(idProyecto))
+        {
+            return null;
+        }
+
+        Proyecto borrado = _proyectos[idProyecto];
+        _proyectos.Remove(idProyecto);
         return borrado;
     }
 
+    // Añadir una entrada al log
     public void AgregarLog(EntradaLog log)
     {
-        // Un log nulo es un error de programación, no se puede ignorar sin más
-        ArgumentNullException.ThrowIfNull(log);
+        // Si el log es null lanzamos una excepción
+        if (log == null)
+        {
+            throw new ArgumentNullException(nameof(log));
+        }
 
         log.Id = _logs.Count + 1;
         _logs.Add(log);
     }
 
+    // Vaciar el log: devuelve cuántas entradas se han borrado
     public int LimpiarLog()
     {
         int count = _logs.Count;
@@ -176,6 +260,7 @@ public class Datos : IDatos
         return count;
     }
 
+    // Dejar la base de datos vacía y los Ids desde el principio
     public void Reiniciar()
     {
         _usuarios.Clear();

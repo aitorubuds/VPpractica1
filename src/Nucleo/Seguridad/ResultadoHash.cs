@@ -10,14 +10,27 @@ public class ResultadoHash : IEquatable<ResultadoHash>
     public string Sal { get; init; } = string.Empty;
     public DateTime Creacion { get; init; } = DateTime.Now;
 
+    // Dos resultados son iguales si tienen el mismo Hash y la misma Sal
     public bool Equals(ResultadoHash? other)
     {
-        if (ReferenceEquals(other, null)) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (ReferenceEquals(other, null))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
         return Hash == other.Hash && Sal == other.Sal;
     }
 
-    public override bool Equals(object? obj) => Equals(obj as ResultadoHash);
+    // Comparar con cualquier objeto: solo puede ser igual si es otro ResultadoHash
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as ResultadoHash);
+    }
 
     public override int GetHashCode()
     {
@@ -26,10 +39,21 @@ public class ResultadoHash : IEquatable<ResultadoHash>
 
     public static bool operator ==(ResultadoHash? left, ResultadoHash? right)
     {
-        if (ReferenceEquals(left, right)) return true;
-        if (left is null) return false;
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (ReferenceEquals(left, null))
+        {
+            return false;
+        }
+
         return left.Equals(right);
     }
 
-    public static bool operator !=(ResultadoHash? left, ResultadoHash? right) => !(left == right);
+    public static bool operator !=(ResultadoHash? left, ResultadoHash? right)
+    {
+        return !(left == right);
+    }
 }

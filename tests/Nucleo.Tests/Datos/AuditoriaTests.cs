@@ -5,38 +5,43 @@ using System;
 
 namespace Nucleo.Tests.Datos;
 
-// Registro de auditoría de los accesos (acta del cliente)
+// Pruebas del registro de accesos en el log
 [TestClass]
 public class AuditoriaTests
 {
     private global::Datos.Datos _datos = null!;
 
+    // Base de datos vacía antes de cada test
     [TestInitialize]
     public void Inicializar()
     {
         _datos = new global::Datos.Datos();
     }
 
-    // Con usuario: guarda su Id, su email, el nivel, la acción y el mensaje
+    // Si hay usuario se guardan su Id, su email, el nivel, la acción y el mensaje
     [TestMethod]
     public void Registrar_ConUsuario_GuardaSusDatos()
     {
-        Usuario pedro = _datos.GuardarUsuario(new Usuario { Cuenta = "pedro", EMail = "pedro@ubu.es" })!;
+        Usuario pedro = new Usuario();
+        pedro.Cuenta = "pedro";
+        pedro.EMail = "pedro@ubu.es";
+        _datos.GuardarUsuario(pedro);
         DateTime antes = DateTime.Now;
 
         EntradaLog log = Auditoria.Registrar(_datos, Auditoria.NivelInfo, Auditoria.LoginCorrecto,
             "Inicio de sesión correcto", pedro);
 
-        Assert.HasCount(1, _datos.Logs);
+        Assert.AreEqual(1, _datos.Logs.Count);
         Assert.AreEqual(pedro.Id, log.UsuarioId);
         Assert.AreEqual("pedro@ubu.es", log.NombreUsuario);
         Assert.AreEqual(Auditoria.NivelInfo, log.Nivel);
         Assert.AreEqual(Auditoria.LoginCorrecto, log.Accion);
         Assert.AreEqual("Inicio de sesión correcto", log.Mensaje);
-        Assert.IsGreaterThanOrEqualTo(antes, log.FechaHora);
+        // La fecha es la de ahora, no una anterior
+        Assert.IsTrue(log.FechaHora >= antes);
     }
 
-    // Sin usuario (email que no existe): UsuarioId 0 y se guarda el email intentado
+    // Si el email no existe se guarda UsuarioId 0 y el email que se ha intentado
     [TestMethod]
     public void Registrar_SinUsuario_GuardaEmailIntentado()
     {
@@ -56,6 +61,6 @@ public class AuditoriaTests
 
         Assert.AreEqual(1, log1.Id);
         Assert.AreEqual(2, log2.Id);
-        Assert.HasCount(2, _datos.Logs);
+        Assert.AreEqual(2, _datos.Logs.Count);
     }
 }

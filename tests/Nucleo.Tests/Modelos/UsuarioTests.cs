@@ -154,11 +154,15 @@ public class UsuarioTests
         u.Activa = false;
         u.IntentosErroneos = 2;
 
+        // Las propiedades alias devuelven lo mismo que las originales
         Assert.AreEqual(7, u.Id);
         Assert.IsFalse(u.Activo);
         Assert.AreEqual(2, u.IntentosFallidos);
 
+        // Reactivamos la cuenta
         u.Activa = true;
+
+        // Los métodos alias comprueban y cambian la contraseña igual que los originales
         Assert.IsTrue(u.CompruebaPassword("ContraseñaSegura123!"));
         Assert.IsTrue(u.CambiaPassword("ContraseñaSegura123!", "NuevaClaveSuperSegura456!"));
         Assert.IsTrue(u.ComprobarContrasena("NuevaClaveSuperSegura456!"));
@@ -171,36 +175,69 @@ public class UsuarioTests
         Usuario u = CrearUsuarioPrueba();
         u.Activo = false;
 
-        Assert.IsFalse(u.ComprobarContrasena("ContraseñaSegura123!"));
+        bool resultado = u.ComprobarContrasena("ContraseñaSegura123!");
+
+        Assert.IsFalse(resultado);
     }
 
-    // Sin contraseña establecida no tiene credenciales; con ella sí
+    // Sin contraseña establecida no tiene credenciales
     [TestMethod]
-    public void TieneCredenciales_SoloConContrasena()
+    public void TieneCredenciales_SinContrasena()
     {
-        Usuario sinClave = new Usuario { Cuenta = "nueva" };
+        Usuario u = new Usuario();
+        u.Cuenta = "nueva";
 
-        Assert.IsFalse(sinClave.TieneCredencialesConfiguradas);
-        Assert.IsTrue(CrearUsuarioPrueba().TieneCredencialesConfiguradas);
+        Assert.IsFalse(u.TieneCredencialesConfiguradas);
     }
 
-    // ToString: nombre solo o nombre y apellidos
+    // Con contraseña establecida sí tiene credenciales
     [TestMethod]
-    [DataRow("Alejandro", "", "Alejandro")]
-    [DataRow("Alejandro", "   ", "Alejandro")]
-    [DataRow("Alejandro", "García", "Alejandro García")]
-    public void ToString_NombreYApellidos(string nombre, string apellidos, string esperado)
+    public void TieneCredenciales_ConContrasena()
     {
-        Usuario u = new Usuario { Nombre = nombre, Apellidos = apellidos };
+        Usuario u = CrearUsuarioPrueba();
 
-        Assert.AreEqual(esperado, u.ToString());
+        Assert.IsTrue(u.TieneCredencialesConfiguradas);
+    }
+
+    // ToString con solo nombre devuelve el nombre
+    [TestMethod]
+    public void ToString_SoloNombre()
+    {
+        Usuario u = new Usuario();
+        u.Nombre = "Alejandro";
+        u.Apellidos = "";
+
+        Assert.AreEqual("Alejandro", u.ToString());
+    }
+
+    // ToString con apellidos en blanco devuelve solo el nombre
+    [TestMethod]
+    public void ToString_ApellidosEnBlanco()
+    {
+        Usuario u = new Usuario();
+        u.Nombre = "Alejandro";
+        u.Apellidos = "   ";
+
+        Assert.AreEqual("Alejandro", u.ToString());
+    }
+
+    // ToString con nombre y apellidos devuelve ambos
+    [TestMethod]
+    public void ToString_NombreYApellidos()
+    {
+        Usuario u = new Usuario();
+        u.Nombre = "Alejandro";
+        u.Apellidos = "García";
+
+        Assert.AreEqual("Alejandro García", u.ToString());
     }
 
     // El alias IdProyecto de Proyecto es el mismo que Id
     [TestMethod]
     public void Proyecto_AliasIdProyecto()
     {
-        Proyecto p = new Proyecto { IdProyecto = 3 };
+        Proyecto p = new Proyecto();
+        p.IdProyecto = 3;
 
         Assert.AreEqual(3, p.Id);
         Assert.AreEqual(3, p.IdProyecto);
@@ -210,26 +247,46 @@ public class UsuarioTests
     [TestMethod]
     public void Telefono_SeGuardaCifrado()
     {
-        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
         Usuario u = CrearUsuarioPrueba();
+        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
 
+        // Guardamos el teléfono con espacios alrededor
         u.EstablecerTelefono(" 600123456 ", clave);
 
+        // No se guarda en claro y se recupera sin espacios
         Assert.DoesNotContain("600123456", u.TelefonoCifrado);
         Assert.AreEqual("600123456", u.ObtenerTelefono(clave));
     }
 
-    // Teléfono vacío o con espacios borra el que hubiera
+    // Teléfono vacío borra el que hubiera
     [TestMethod]
-    [DataRow("")]
-    [DataRow("   ")]
-    public void Telefono_Vacio_SeBorra(string telefono)
+    public void Telefono_Vacio_SeBorra()
     {
-        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
         Usuario u = CrearUsuarioPrueba();
+        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
+
+        // Ponemos un teléfono
         u.EstablecerTelefono("600123456", clave);
 
-        u.EstablecerTelefono(telefono, clave);
+        // Lo borramos con un teléfono vacío
+        u.EstablecerTelefono("", clave);
+
+        Assert.AreEqual(string.Empty, u.TelefonoCifrado);
+        Assert.AreEqual(string.Empty, u.ObtenerTelefono(clave));
+    }
+
+    // Teléfono solo con espacios también borra el que hubiera
+    [TestMethod]
+    public void Telefono_SoloEspacios_SeBorra()
+    {
+        Usuario u = CrearUsuarioPrueba();
+        string clave = Nucleo.Seguridad.ServicioCifrado.GenerarClave();
+
+        // Ponemos un teléfono
+        u.EstablecerTelefono("600123456", clave);
+
+        // Lo borramos con un teléfono de solo espacios
+        u.EstablecerTelefono("   ", clave);
 
         Assert.AreEqual(string.Empty, u.TelefonoCifrado);
         Assert.AreEqual(string.Empty, u.ObtenerTelefono(clave));
@@ -239,6 +296,8 @@ public class UsuarioTests
     [TestMethod]
     public void Usuario_PorDefecto_NoEsAdministrador()
     {
-        Assert.IsFalse(new Usuario().EsAdministrador);
+        Usuario u = new Usuario();
+
+        Assert.IsFalse(u.EsAdministrador);
     }
 }
