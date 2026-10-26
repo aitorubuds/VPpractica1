@@ -189,7 +189,7 @@ public class PermisosIntegracionTests
             _web.Datos.LeerUsuario(DatosPrueba.EmailAdmin)!.ObtenerTelefono(ClienteWeb.ClaveCifrado));
     }
 
-    //la descripción es opcional, se puede crear un proyecto sin ella (DEF-05, lo encontró Selenium)
+    //la descripción es opcional, se puede crear un proyecto sin ella
     [TestMethod]
     public async Task IT19_Admin_CreaProyectoSinDescripcion()
     {

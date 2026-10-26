@@ -189,7 +189,7 @@ public class ServicioHashTests
         Assert.IsFalse(_servicio.Verificar("MiTexto", hash, datos.Sal));
     }
 
-    // CP-17 (ED-15, ED-16): sal con formato no válido -> false sin excepción
+    //sal con formato no válido -> false sin excepción
     [TestMethod]
     [DataRow("no-es-una-sal-valida!!!")]
     [DataRow("abc")]

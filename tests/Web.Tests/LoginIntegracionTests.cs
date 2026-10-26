@@ -79,7 +79,6 @@ public class LoginIntegracionTests
     [TestMethod]
     public async Task IT04_TresFallos_BloqueaCuenta()
     {
-        // Los datos de prueba ya traen algún login fallido, contamos solo los nuevos
         int fallidosAntes = _web.Datos.Logs.Count(l => l.Accion == Auditoria.LoginFallido);
 
         for (int i = 0; i < 3; i++)
@@ -121,7 +120,7 @@ public class LoginIntegracionTests
         Assert.IsNotNull(UltimoLog(Auditoria.CierreSesion));
     }
 
-    // IT-07 (seguridad): un POST sin token antiforgery se rechaza
+    // IT-07 (seguridad): un POST sin token se rechaza
     [TestMethod]
     [DataRow("/Login")]
     [DataRow("/Login/Index2?handler=Aceptar")]
@@ -134,7 +133,7 @@ public class LoginIntegracionTests
         Assert.AreEqual(HttpStatusCode.BadRequest, respuesta.StatusCode);
     }
 
-    // IT-08 (seguridad): la cookie de sesión es HttpOnly (no se puede leer desde JavaScript)
+    // IT-08 (seguridad): la cookie de sesión es HttpOnly 
     [TestMethod]
     public async Task IT08_CookieSesion_HttpOnly()
     {
@@ -147,7 +146,7 @@ public class LoginIntegracionTests
         Assert.Contains("httponly", cookie);
     }
 
-    // IT-09: los recursos estáticos (Bootstrap y CSS propios) se sirven
+    // IT-09
     [TestMethod]
     [DataRow("/lib/bootstrap/dist/css/bootstrap.css")]
     [DataRow("/css/site.css")]
