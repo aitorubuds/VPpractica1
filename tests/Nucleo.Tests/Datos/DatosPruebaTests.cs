@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Nucleo.Modelos;
 using Nucleo.Seguridad;
 using Datos;
-using System.Linq;
 
 namespace Nucleo.Tests.Datos;
 
@@ -13,6 +12,7 @@ public class DatosPruebaTests
     private global::Datos.Datos _datos = null!;
     private string _clave = null!;
 
+    // Cargar los datos de prueba antes de cada test
     [TestInitialize]
     public void Inicializar()
     {
@@ -30,20 +30,37 @@ public class DatosPruebaTests
         Assert.AreEqual(DatosPrueba.NumLogs, _datos.Logs.Count);
     }
 
-    // 2. Los usuarios activos pueden entrar con su contraseña
+    // 2. El administrador puede entrar con su contraseña
     [TestMethod]
-    [DataRow(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin)]
-    [DataRow(DatosPrueba.EmailTester, DatosPrueba.ClaveTester)]
-    [DataRow(DatosPrueba.EmailInvitado, DatosPrueba.ClaveInvitado)]
-    public void UsuariosActivos_EntranConSuClave(string email, string clave)
+    public void Admin_EntraConSuClave()
     {
-        Usuario? usuario = _datos.LeerUsuario(email);
+        Usuario? admin = _datos.LeerUsuario(DatosPrueba.EmailAdmin);
 
-        Assert.IsNotNull(usuario);
-        Assert.IsTrue(usuario.ComprobarContrasena(clave));
+        Assert.IsNotNull(admin);
+        Assert.IsTrue(admin.ComprobarContrasena(DatosPrueba.ClaveAdmin));
     }
 
-    // 3. El usuario dado de baja existe pero no puede entrar
+    // 3. El tester puede entrar con su contraseña
+    [TestMethod]
+    public void Tester_EntraConSuClave()
+    {
+        Usuario? tester = _datos.LeerUsuario(DatosPrueba.EmailTester);
+
+        Assert.IsNotNull(tester);
+        Assert.IsTrue(tester.ComprobarContrasena(DatosPrueba.ClaveTester));
+    }
+
+    // 4. El invitado puede entrar con su contraseña
+    [TestMethod]
+    public void Invitado_EntraConSuClave()
+    {
+        Usuario? invitado = _datos.LeerUsuario(DatosPrueba.EmailInvitado);
+
+        Assert.IsNotNull(invitado);
+        Assert.IsTrue(invitado.ComprobarContrasena(DatosPrueba.ClaveInvitado));
+    }
+
+    // 5. El usuario dado de baja existe pero no puede entrar
     [TestMethod]
     public void UsuarioBaja_NoPuedeEntrar()
     {
@@ -54,40 +71,60 @@ public class DatosPruebaTests
         Assert.IsFalse(baja.ComprobarContrasena(DatosPrueba.ClaveBaja));
     }
 
-    // 4. Los Ids son los esperados (1, 2, 3...) y cada usuario tiene su rol
+    // 6. Los Ids empiezan en 1 y cada usuario tiene su rol
     [TestMethod]
     public void Crear_IdsYRolesConocidos()
     {
-        Assert.AreEqual(1, _datos.LeerUsuario(DatosPrueba.EmailAdmin)!.Id);
-        Assert.AreEqual("Administrador", _datos.LeerRol(_datos.LeerUsuario(DatosPrueba.EmailAdmin)!.RolId)!.Nombre);
-        Assert.AreEqual("Tester", _datos.LeerRol(_datos.LeerUsuario(DatosPrueba.EmailTester)!.RolId)!.Nombre);
-        Assert.AreEqual("Invitado", _datos.LeerRol(_datos.LeerUsuario(DatosPrueba.EmailInvitado)!.RolId)!.Nombre);
-        Assert.AreEqual("UBU-TPMP", _datos.LeerProyecto(1)!.Siglas);
+        Usuario admin = _datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
+        Usuario tester = _datos.LeerUsuario(DatosPrueba.EmailTester)!;
+        Usuario invitado = _datos.LeerUsuario(DatosPrueba.EmailInvitado)!;
+        Proyecto proyecto = _datos.LeerProyecto(1)!;
+
+        // El administrador es el primero
+        Assert.AreEqual(1, admin.Id);
+
+        // Cada uno tiene su rol
+        Assert.AreEqual("Administrador", _datos.LeerRol(admin.RolId)!.Nombre);
+        Assert.AreEqual("Tester", _datos.LeerRol(tester.RolId)!.Nombre);
+        Assert.AreEqual("Invitado", _datos.LeerRol(invitado.RolId)!.Nombre);
+
+        Assert.AreEqual("UBU-TPMP", proyecto.Siglas);
     }
 
-    // 5. Los proyectos apuntan a usuarios que existen y hay uno inactivo
+    // 7. Los proyectos apuntan a usuarios que existen y hay uno inactivo
     [TestMethod]
     public void Proyectos_ReferenciasValidas()
     {
+        int inactivos = 0;
+
         foreach (Proyecto proyecto in _datos.Proyectos.Values)
         {
+            // Todos los usuarios asignados tienen que existir
             foreach (int idUsuario in proyecto.UsuariosAsignados)
             {
                 Assert.IsNotNull(_datos.LeerUsuario(idUsuario));
             }
+
+            // Contamos los proyectos inactivos
+            if (!proyecto.Activo)
+            {
+                inactivos++;
+            }
         }
 
-        Assert.AreEqual(1, _datos.Proyectos.Values.Count(p => !p.Activo));
+        Assert.AreEqual(1, inactivos);
     }
 
-    // 6. Cargar otra vez después de cambios vuelve al estado conocido
+    // 8. Cargar otra vez después de cambios vuelve al estado conocido
     [TestMethod]
     public void Cargar_DespuesDeCambios_VuelveAlEstadoConocido()
     {
+        // Hacemos cambios en los datos
         _datos.EliminarUsuario(1);
         _datos.GuardarProyecto(new Proyecto { Nombre = "Nuevo" });
         _datos.LimpiarLog();
 
+        // Volvemos a cargar
         DatosPrueba.Cargar(_datos, _clave);
 
         Assert.AreEqual(DatosPrueba.NumUsuarios, _datos.Usuarios.Count);
@@ -96,35 +133,64 @@ public class DatosPruebaTests
         Assert.AreEqual(1, _datos.LeerUsuario(DatosPrueba.EmailAdmin)!.Id);
     }
 
-    // 7. Se puede simular el alta de elementos partiendo de los datos conocidos
+    // 9. Se puede simular el alta de elementos partiendo de los datos conocidos
     [TestMethod]
     public void Simular_AltaSobreDatosConocidos()
     {
-        Usuario nuevo = new Usuario { Cuenta = "nuevo", EMail = "nuevo@ubu.es" };
-        Usuario duplicado = new Usuario { Cuenta = "copia", EMail = DatosPrueba.EmailTester };
+        Usuario nuevo = new Usuario();
+        nuevo.Cuenta = "nuevo";
+        nuevo.EMail = "nuevo@ubu.es";
 
-        Assert.AreEqual(DatosPrueba.NumUsuarios + 1, _datos.GuardarUsuario(nuevo)!.Id);
-        Assert.IsNull(_datos.GuardarUsuario(duplicado));
+        // Este tiene el email del tester, así que no se puede dar de alta
+        Usuario duplicado = new Usuario();
+        duplicado.Cuenta = "copia";
+        duplicado.EMail = DatosPrueba.EmailTester;
+
+        Usuario? guardado = _datos.GuardarUsuario(nuevo);
+        Usuario? rechazado = _datos.GuardarUsuario(duplicado);
+
+        Assert.IsNotNull(guardado);
+        Assert.AreEqual(DatosPrueba.NumUsuarios + 1, guardado.Id);
+        Assert.IsNull(rechazado);
     }
 
-    // 8. Solo admin es administrador
+    // 10. Solo admin es administrador
     [TestMethod]
     public void SoloAdmin_EsAdministrador()
     {
-        Assert.AreEqual(1, _datos.Usuarios.Values.Count(u => u.EsAdministrador));
+        int administradores = 0;
+
+        foreach (Usuario u in _datos.Usuarios.Values)
+        {
+            if (u.EsAdministrador)
+            {
+                administradores++;
+            }
+        }
+
+        Assert.AreEqual(1, administradores);
         Assert.IsTrue(_datos.LeerUsuario(DatosPrueba.EmailAdmin)!.EsAdministrador);
     }
 
-    // 9. Los teléfonos se guardan cifrados y se recuperan con la clave
+    // 11. El teléfono del administrador se guarda cifrado y se recupera con la clave
     [TestMethod]
-    [DataRow(DatosPrueba.EmailAdmin, DatosPrueba.TelefonoAdmin)]
-    [DataRow(DatosPrueba.EmailTester, DatosPrueba.TelefonoTester)]
-    public void Telefonos_GuardadosCifrados(string email, string telefono)
+    public void TelefonoAdmin_GuardadoCifrado()
     {
-        Usuario usuario = _datos.LeerUsuario(email)!;
+        Usuario admin = _datos.LeerUsuario(DatosPrueba.EmailAdmin)!;
 
-        Assert.AreNotEqual(telefono, usuario.TelefonoCifrado);
-        Assert.DoesNotContain(telefono, usuario.TelefonoCifrado);
-        Assert.AreEqual(telefono, usuario.ObtenerTelefono(_clave));
+        Assert.AreNotEqual(DatosPrueba.TelefonoAdmin, admin.TelefonoCifrado);
+        Assert.DoesNotContain(DatosPrueba.TelefonoAdmin, admin.TelefonoCifrado);
+        Assert.AreEqual(DatosPrueba.TelefonoAdmin, admin.ObtenerTelefono(_clave));
+    }
+
+    // 12. El teléfono del tester se guarda cifrado y se recupera con la clave
+    [TestMethod]
+    public void TelefonoTester_GuardadoCifrado()
+    {
+        Usuario tester = _datos.LeerUsuario(DatosPrueba.EmailTester)!;
+
+        Assert.AreNotEqual(DatosPrueba.TelefonoTester, tester.TelefonoCifrado);
+        Assert.DoesNotContain(DatosPrueba.TelefonoTester, tester.TelefonoCifrado);
+        Assert.AreEqual(DatosPrueba.TelefonoTester, tester.ObtenerTelefono(_clave));
     }
 }

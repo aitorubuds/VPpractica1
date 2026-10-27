@@ -3,7 +3,7 @@ using System;
 
 namespace Datos;
 
-// Registro de auditoría: todos los accesos quedan en el log (acta del cliente, PR1 p.4)
+// Registro de auditoría: todos los accesos quedan en el log
 public static class Auditoria
 {
     // Niveles que se muestran en la página de Log

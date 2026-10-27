@@ -5,54 +5,75 @@ using System.Security.Cryptography;
 
 namespace Nucleo.Tests.Seguridad;
 
-// Pruebas de caja blanca de ServicioCifrado (AES-GCM), mirando cada rama del código
+// Pruebas de caja blanca de ServicioCifrado, probando todos los casos del código
 [TestClass]
 public class ServicioCifradoTests
 {
     private string _clave = null!;
 
+    // Generamos una clave nueva antes de cada test
     [TestInitialize]
     public void Inicializar()
     {
         _clave = ServicioCifrado.GenerarClave();
     }
 
-    #region GenerarClave
-
-    // La clave es Base64 de 32 bytes (AES-256)
+    // La clave tiene que ser Base64 y de 32 bytes
     [TestMethod]
     public void GenerarClave_Devuelve32BytesEnBase64()
     {
         byte[] bytes = Convert.FromBase64String(_clave);
 
-        Assert.HasCount(32, bytes);
+        Assert.AreEqual(32, bytes.Length);
     }
 
     // Cada llamada da una clave distinta
     [TestMethod]
     public void GenerarClave_ClavesDiferentes()
     {
-        Assert.AreNotEqual(ServicioCifrado.GenerarClave(), ServicioCifrado.GenerarClave());
+        string clave1 = ServicioCifrado.GenerarClave();
+        string clave2 = ServicioCifrado.GenerarClave();
+
+        Assert.AreNotEqual(clave1, clave2);
     }
 
-    #endregion
-
-    #region Cifrar y Descifrar
-
-    // Lo que se cifra se recupera igual al descifrar
+    // Un DNI cifrado se recupera igual al descifrar
     [TestMethod]
-    [DataRow("12345678Z")]
-    [DataRow("a")]
-    [DataRow("Teléfono: 600 123 456 ñ€")]
-    public void CifrarDescifrar_RecuperaTextoOriginal(string texto)
+    public void CifrarDescifrar_Dni()
     {
-        string cifrado = ServicioCifrado.Cifrar(texto, _clave);
+        string cifrado = ServicioCifrado.Cifrar("12345678Z", _clave);
 
-        Assert.AreNotEqual(texto, cifrado);
-        Assert.AreEqual(texto, ServicioCifrado.Descifrar(cifrado, _clave));
+        string descifrado = ServicioCifrado.Descifrar(cifrado, _clave);
+
+        Assert.AreNotEqual("12345678Z", cifrado);
+        Assert.AreEqual("12345678Z", descifrado);
     }
 
-    // El mismo texto cifrado dos veces da resultados distintos (nonce aleatorio)
+    // Un texto de una sola letra se recupera igual al descifrar
+    [TestMethod]
+    public void CifrarDescifrar_UnaLetra()
+    {
+        string cifrado = ServicioCifrado.Cifrar("a", _clave);
+
+        string descifrado = ServicioCifrado.Descifrar(cifrado, _clave);
+
+        Assert.AreNotEqual("a", cifrado);
+        Assert.AreEqual("a", descifrado);
+    }
+
+    // Un texto con espacios, tildes y símbolos se recupera igual al descifrar
+    [TestMethod]
+    public void CifrarDescifrar_TextoConSimbolos()
+    {
+        string cifrado = ServicioCifrado.Cifrar("Teléfono: 600 123 456 ñ€", _clave);
+
+        string descifrado = ServicioCifrado.Descifrar(cifrado, _clave);
+
+        Assert.AreNotEqual("Teléfono: 600 123 456 ñ€", cifrado);
+        Assert.AreEqual("Teléfono: 600 123 456 ñ€", descifrado);
+    }
+
+    // Si ciframos dos veces el mismo texto salen resultados distintos
     [TestMethod]
     public void Cifrar_MismoTexto_ResultadosDiferentes()
     {
@@ -62,43 +83,81 @@ public class ServicioCifradoTests
         Assert.AreNotEqual(cifrado1, cifrado2);
     }
 
-    // Texto nulo, vacío o con espacios -> ArgumentException
+    // Cifrar un texto nulo lanza ArgumentException
     [TestMethod]
-    [DataRow(null)]
-    [DataRow("")]
-    [DataRow("   ")]
-    public void Cifrar_TextoNoValido_LanzaExcepcion(string? texto)
+    public void Cifrar_TextoNulo()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar(texto!, _clave));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar(null!, _clave));
     }
 
-    // Clave nula, vacía, no Base64 o de tamaño incorrecto -> ArgumentException
+    // Cifrar un texto vacío lanza ArgumentException
     [TestMethod]
-    [DataRow(null, DisplayName = "Clave nula")]
-    [DataRow("", DisplayName = "Clave vacía")]
-    [DataRow("no-es-base64!!!", DisplayName = "Clave no Base64")]
-    [DataRow("AAAAAAAAAAAAAAAAAAAAAA==", DisplayName = "Clave de 16 bytes")]
-    public void Cifrar_ClaveNoValida_LanzaExcepcion(string? clave)
+    public void Cifrar_TextoVacio()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", clave!));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("", _clave));
     }
 
-    // Contenido nulo, vacío o con espacios -> ArgumentException
+    // Cifrar un texto con solo espacios lanza ArgumentException
     [TestMethod]
-    [DataRow(null)]
-    [DataRow("")]
-    [DataRow("   ")]
-    public void Descifrar_ContenidoVacio_LanzaExcepcion(string? contenido)
+    public void Cifrar_TextoEspacios()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar(contenido!, _clave));
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("   ", _clave));
     }
 
-    // Contenido demasiado corto (solo nonce + etiqueta o menos) -> ArgumentException
+    // Cifrar con una clave nula lanza ArgumentException
+    [TestMethod]
+    public void Cifrar_ClaveNula()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", null!));
+    }
+
+    // Cifrar con una clave vacía lanza ArgumentException
+    [TestMethod]
+    public void Cifrar_ClaveVacia()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", ""));
+    }
+
+    // Cifrar con una clave que no es Base64 lanza ArgumentException
+    [TestMethod]
+    public void Cifrar_ClaveNoBase64()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", "no-es-base64!!!"));
+    }
+
+    // Cifrar con una clave de 16 bytes, que no es el tamaño bueno, lanza ArgumentException
+    [TestMethod]
+    public void Cifrar_Clave16Bytes()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Cifrar("12345678Z", "AAAAAAAAAAAAAAAAAAAAAA=="));
+    }
+
+    // Descifrar un contenido nulo lanza ArgumentException
+    [TestMethod]
+    public void Descifrar_ContenidoNulo()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar(null!, _clave));
+    }
+
+    // Descifrar un contenido vacío lanza ArgumentException
+    [TestMethod]
+    public void Descifrar_ContenidoVacio()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar("", _clave));
+    }
+
+    // Descifrar un contenido con solo espacios lanza ArgumentException
+    [TestMethod]
+    public void Descifrar_ContenidoEspacios()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar("   ", _clave));
+    }
+
+    // Si lo cifrado es demasiado corto lanza ArgumentException
     [TestMethod]
     public void Descifrar_ContenidoCorto_LanzaExcepcion()
     {
         string corto = Convert.ToBase64String(new byte[28]);
-
         Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar(corto, _clave));
     }
 
@@ -108,18 +167,17 @@ public class ServicioCifradoTests
     {
         string cifrado = ServicioCifrado.Cifrar("12345678Z", _clave);
         string otraClave = ServicioCifrado.GenerarClave();
-
         Assert.Throws<CryptographicException>(() => ServicioCifrado.Descifrar(cifrado, otraClave));
     }
 
-    // Si se modifica un byte del contenido cifrado se detecta (integridad de AES-GCM)
+    // Si cambiamos un byte de lo cifrado ya no se puede descifrar
     [TestMethod]
     public void Descifrar_ContenidoManipulado_LanzaCryptographicException()
     {
+        // Ciframos y cambiamos el último byte
         byte[] bytes = Convert.FromBase64String(ServicioCifrado.Cifrar("12345678Z", _clave));
-        bytes[^1] ^= 0xFF;
+        bytes[bytes.Length - 1] ^= 0xFF;
         string manipulado = Convert.ToBase64String(bytes);
-
         Assert.Throws<CryptographicException>(() => ServicioCifrado.Descifrar(manipulado, _clave));
     }
 
@@ -128,9 +186,6 @@ public class ServicioCifradoTests
     public void Descifrar_ClaveNoValida_LanzaExcepcion()
     {
         string cifrado = ServicioCifrado.Cifrar("12345678Z", _clave);
-
         Assert.ThrowsExactly<ArgumentException>(() => ServicioCifrado.Descifrar(cifrado, "corta"));
     }
-
-    #endregion
 }

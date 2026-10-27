@@ -16,7 +16,7 @@ El objetivo principal de la práctica no radica en desarrollar una interfaz grá
 - Trazabilidad bidireccional completa desde requisitos hasta casos de prueba.
 - Modelado formal exclusivamente en UML.
 - Diseño e implementación de pruebas unitarias de caja negra y caja blanca mediante **MSTest.Sdk**.
-- Recubrimiento/cobertura de código **$\ge 90\%$** verificado en Visual Studio.
+- Recubrimiento/cobertura de código **≥ 90 %** verificado en Visual Studio.
 - Planificación y seguimiento ágil en equipo mediante un tablero Kanban digital en Microsoft Planner.
 
 ---
@@ -29,7 +29,7 @@ Las siguientes pautas fueron remarcadas expresamente por el profesor Pedro Rened
 | :--- | :--- |
 | **Modelado de Datos** | **Prohibido el uso de diagramas Entidad-Relación (E-R)**. Toda la documentación del sistema debe realizarse exclusivamente en **UML** (Diagramas de Clases, Paquetes y Casos de Uso). |
 | **Uso de Inteligencia Artificial** | Se permite el uso de IA para generar código auxiliar o esqueletos de clases (ej. `Usuario.cs`), pero está **estrictamente prohibido generar el código de las pruebas unitarias con IA** (objeto principal de evaluación). |
-| **Cobertura de Código (Recubrimiento)** | **$\ge 90\%$ en la librería `Núcleo`** para aspirar a la calificación máxima de 10. Una cobertura de **80% o inferior acarreará penalizaciones directas** en la defensa. |
+| **Cobertura de Código (Recubrimiento)** | **≥ 90 % en la librería `Núcleo`** para aspirar a la calificación máxima de 10. Una cobertura de **80% o inferior acarreará penalizaciones directas** en la defensa. |
 | **Defensa en Visual Studio** | El profesor comprobará in situ la ejecución de las pruebas y la ventana de *Analizar cobertura de código* en Visual Studio. |
 | **Encapsulación de Contraseñas** | Ninguna contraseña debe almacenarse ni ser accesible en texto plano. Las propiedades hash y sal no deben exponerse públicamente sin control. |
 | **Tablero Kanban Digital** | Debe crearse obligatoriamente en **Microsoft Planner** (Office 365) con el nombre exacto `DniAlumno1-DniAlumno2` y dar acceso al profesor. |
@@ -112,7 +112,7 @@ TestProjectManagementPlatform.sln
 ### 4.3. Servicios Criptográficos (`Nucleo.Seguridad`)
 - **`ServicioHash`:** Algoritmo PBKDF2 (`Rfc2898DeriveBytes`) con HMAC-SHA256 y sal independiente de 16 bytes.
 - **`ServicioCifrado`:** Cifrado simétrico autenticado **AES-256-GCM** (Nonce de 12 bytes, Tag de autenticación de 16 bytes, clave en Base64).
-- **`ServicioContrasenas`:** Requisitos mínimos: $\ge 8$ caracteres, al menos 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial o símbolo.
+- **`ServicioContrasenas`:** Requisitos mínimos: ≥ 8 caracteres, al menos 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial o símbolo.
 
 ---
 
@@ -125,7 +125,7 @@ Basada en el documento oficial `GINF-6376-2026-XX-E01 Pruebas Unitarias 1.pdf`:
 | :--- | :--- | :--- | :--- |
 | **ED-01 - ED-04** | `Generar(texto)` | Texto `null`, cadena vacía (`""`) o solo espacios (`"   "`) | Lanza `InvalidOperationException` |
 | **ED-05 - ED-06** | `Generar(texto)` | Texto válido (`"MiClave123!"`) | Retorna `ResultadoHash` con `Hash` y `Sal` no nulos ni vacíos |
-| **ED-07 - ED-08** | `Generar(texto)` | Dos llamadas consecutivas con el **mismo texto** | Sal 1 $\ne$ Sal 2 y Hash 1 $\ne$ Hash 2 (unicidad y variabilidad) |
+| **ED-07 - ED-08** | `Generar(texto)` | Dos llamadas consecutivas con el **mismo texto** | Sal 1 ≠ Sal 2 y Hash 1 ≠ Hash 2 (unicidad y variabilidad) |
 | **ED-09** | `Generar(texto)` | Entrada válida | Todas las propiedades del resultado son íntegras y válidas |
 | **ED-10 - ED-12** | `Verificar(...)` | Texto original, hash y sal correctos | Retorna `true` |
 | **ED-13** | `Verificar(...)` | Texto diferente al utilizado para generar el hash | Retorna `false` |
@@ -165,7 +165,7 @@ La memoria PDF a entregar debe estructurarse conforme a los apartados del enunci
 
 ### 6.2. Apartado b: Estructura de Información y Cadena de Trazabilidad
 Se deben incluir las tablas completas con identificadores únicos:
-$$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow \text{Requisitos / HU (RE/HU)} \longrightarrow \text{Criterios de Aceptación (CA)} \longrightarrow \text{Casos de Prueba (CP)}$$
+Actores (ACT) → Casos de Uso (CU) → Requisitos / HU (RE/HU) → Criterios de Aceptación (CA) → Casos de Prueba (CP)
 
 *Ejemplo de convención de identificadores:*
 - `ACT-01`: Administrador, `ACT-02`: Tester/Tester Líder.
@@ -181,7 +181,7 @@ $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow 
 
 ### 6.4. Apartado f: Informe de Pruebas y Cobertura
 - Resumen de ejecución de pruebas unitarias, de integración, seguridad, sistema (navegadores) y usabilidad.
-- Evidencias gráficas de la ventana de cobertura de Visual Studio certificando **$\ge 90\%$ de recubrimiento en `Nucleo`**.
+- Evidencias gráficas de la ventana de cobertura de Visual Studio certificando **≥ 90 % de recubrimiento en `Nucleo`**.
 
 ---
 
@@ -191,7 +191,7 @@ $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow 
 | :--- | :--- | :--- |
 | **Tablero Kanban** | Microsoft Planner `DniAlumno1-DniAlumno2` | Durante todo el ciclo de trabajo |
 | **Entrega de la Práctica** | Un único fichero `DniAlumno1-DniAlumno2.zip` en UBUVirtual con:<br>1. Memoria en PDF requerida.<br>2. Solución completa de Visual Studio con código y tests. | **28 de octubre de 2026** (23:59 h) |
-| **Defensa Presencial** | Ejecución de la aplicación, paso de pruebas y revisión de cobertura $\ge 90\%$ ante el profesor. | **07 al 14 de noviembre de 2026** |
+| **Defensa Presencial** | Ejecución de la aplicación, paso de pruebas y revisión de cobertura ≥ 90 % ante el profesor. | **07 al 14 de noviembre de 2026** |
 
 ---
 
@@ -201,7 +201,7 @@ $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow 
   - [ ] Crear el archivo de solución `TestProjectManagementPlatform.sln`.
   - [ ] Incluir `IDatos.cs` y su archivo `Datos.csproj` en `src/Datos`.
   - [ ] Crear el proyecto `Nucleo.Tests` con `MSTest.Sdk`.
-  - [ ] Configurar las referencias entre proyectos (`Nucleo.Tests` $\to$ `Nucleo` y `Datos`).
+  - [ ] Configurar las referencias entre proyectos (`Nucleo.Tests` → `Nucleo` y `Datos`).
 - [ ] **2. Dominio y Seguridad (`src/Nucleo`):**
   - [ ] Consensuar e implementar la funcionalidad única en `Usuario.cs` (ej. bloqueo tras 3 intentos fallidos).
   - [ ] Implementar `ComprobarContrasena` y `CambiarContrasena` sin exponer texto plano.
@@ -211,9 +211,9 @@ $$\text{Actores (ACT)} \longrightarrow \text{Casos de Uso (CU)} \longrightarrow 
   - [ ] Implementar `UsuarioTests.cs` validando el cambio de clave y la funcionalidad exclusiva.
   - [ ] Implementar `DatosTests.cs` verificando CRUD, auto-IDs y `Reiniciar()`.
 - [ ] **4. Validación de Cobertura:**
-  - [ ] Ejecutar *Analizar cobertura de código* en Visual Studio y constatar $\ge 90\%$.
+  - [ ] Ejecutar *Analizar cobertura de código* en Visual Studio y constatar ≥ 90 %.
 - [ ] **5. Documentación y Memoria:**
   - [ ] Crear tablero en Microsoft Planner y volcar tareas.
-  - [ ] Redactar la tabla de trazabilidad ACT $\to$ CU $\to$ RE $\to$ CA $\to$ CP.
+  - [ ] Redactar la tabla de trazabilidad ACT → CU → RE → CA → CP.
   - [ ] Diseñar los diagramas UML (paquetes y clases con tests).
   - [ ] Generar la memoria final en PDF y empaquetar en `.zip`.

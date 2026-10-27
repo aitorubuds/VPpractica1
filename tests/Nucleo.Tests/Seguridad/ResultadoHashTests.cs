@@ -3,11 +3,11 @@ using Nucleo.Seguridad;
 
 namespace Nucleo.Tests.Seguridad;
 
-// Pruebas de caja negra de ResultadoHash según el E01 (ED-18 a ED-20)
+// Pruebas de caja negra de ResultadoHash
 [TestClass]
 public class ResultadoHashTests
 {
-    // CP-19 (ED-18, ED-19): tiene las propiedades Hash y Sal y guardan lo que se les da
+    // Tiene las propiedades Hash y Sal y guardan lo que se les da
     [TestMethod]
     public void CP19_ResultadoHash_GuardaHashYSal()
     {
@@ -17,7 +17,7 @@ public class ResultadoHashTests
         Assert.AreEqual("sal-de-prueba", resultado.Sal);
     }
 
-    // CP-20 (ED-20): todo ResultadoHash que devuelve el servicio tiene Hash y Sal no nulos ni vacíos
+    // Todo ResultadoHash que devuelve el servicio tiene Hash y Sal no nulos ni vacíos
     [TestMethod]
     [DataRow("MiPassword123")]
     [DataRow("a")]
@@ -25,7 +25,9 @@ public class ResultadoHashTests
     [DataRow("ñáéíóú€@#")]
     public void CP20_ResultadoHash_DelServicio_SinValoresVacios(string texto)
     {
-        ResultadoHash resultado = new ServicioHash().Generar(texto);
+        ServicioHash servicio = new ServicioHash();
+
+        ResultadoHash resultado = servicio.Generar(texto);
 
         Assert.IsNotNull(resultado.Hash);
         Assert.IsNotNull(resultado.Sal);
@@ -33,11 +35,15 @@ public class ResultadoHashTests
         Assert.AreNotEqual(string.Empty, resultado.Sal);
     }
 
-    #region Caja blanca: igualdad (no está en el E01, pero la clase lo implementa)
+    // Pruebas de la igualdad entre dos ResultadoHash
 
-    private static ResultadoHash Crear(string hash, string sal) => new ResultadoHash { Hash = hash, Sal = sal };
+    // Función auxiliar para crear un ResultadoHash con el hash y la sal que digamos
+    private static ResultadoHash Crear(string hash, string sal)
+    {
+        return new ResultadoHash { Hash = hash, Sal = sal };
+    }
 
-    // Mismo Hash y Sal -> iguales, con el mismo GetHashCode
+    // Con el mismo Hash y la misma Sal son iguales y tienen el mismo GetHashCode
     [TestMethod]
     public void Igualdad_MismosValores_SonIguales()
     {
@@ -51,14 +57,24 @@ public class ResultadoHashTests
         Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
     }
 
-    // Cambia el Hash o la Sal -> distintos
+    // Si cambia el Hash ya no son iguales
     [TestMethod]
-    [DataRow("otro", "s")]
-    [DataRow("h", "otra")]
-    public void Igualdad_ValoresDistintos_NoSonIguales(string hash, string sal)
+    public void Igualdad_HashDistinto()
     {
         ResultadoHash a = Crear("h", "s");
-        ResultadoHash b = Crear(hash, sal);
+        ResultadoHash b = Crear("otro", "s");
+
+        Assert.IsFalse(a.Equals(b));
+        Assert.IsFalse(a == b);
+        Assert.IsTrue(a != b);
+    }
+
+    // Si cambia la Sal ya no son iguales
+    [TestMethod]
+    public void Igualdad_SalDistinta()
+    {
+        ResultadoHash a = Crear("h", "s");
+        ResultadoHash b = Crear("h", "otra");
 
         Assert.IsFalse(a.Equals(b));
         Assert.IsFalse(a == b);
@@ -80,6 +96,4 @@ public class ResultadoHashTests
         Assert.IsTrue(nulo == null);
         Assert.IsTrue(a != nulo);
     }
-
-    #endregion
 }

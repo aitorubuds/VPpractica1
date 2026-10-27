@@ -1,261 +1,345 @@
 using Datos;
+using Nucleo.Modelos;
 using OpenQA.Selenium;
 
 namespace Web.UITests;
 
-// Pruebas de la interfaz con Selenium: cada prueba se repite en Chrome, Edge y Firefox
+// Pruebas de la interfaz con Selenium, cada prueba se hace en Chrome, Edge y Firefox
 [TestClass]
 [TestCategory("UI")]
 public class NavegadorTests
 {
-    public static IEnumerable<object[]> Navegadores =>
-    [
-        ["chrome"],
-        ["edge"],
-        ["firefox"]
-    ];
+    // Función auxiliar para mirar si hay un proyecto con esas siglas en la base de datos
+    private static bool ExisteProyecto(SesionNavegador sesion, string siglas)
+    {
+        foreach (Proyecto p in sesion.Datos.Proyectos.Values)
+        {
+            if (p.Siglas == siglas)
+            {
+                return true;
+            }
+        }
 
-    // UI-01: sin sesión, al pedir una página protegida te manda al login
+        return false;
+    }
+
+    // Sin sesión, al pedir una página protegida nos manda al login
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI01_SinSesion_VaAlLogin(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Ir("/Log");
 
-        s.Ir("/Log");
-
-        s.EsperarPagina("/Login");
-        Assert.IsTrue(s.Existe("txtUsuario"));
+            sesion.EsperarPagina("/Login");
+            Assert.IsTrue(sesion.Existe("txtUsuario"));
+        }
     }
 
-    // UI-02: login correcto, entra a la principal y en el menú sale su nombre
+    // Con el login correcto entra a la principal y en el menú sale su nombre
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI02_LoginCorrecto(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
 
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-
-        s.EsperarPagina("/Principal");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(s.Elemento("btnMenuUsuario").Text));
+            sesion.EsperarPagina("/Principal");
+            string nombre = sesion.Elemento("btnMenuUsuario").Text;
+            Assert.IsFalse(string.IsNullOrWhiteSpace(nombre));
+        }
     }
 
-    // UI-03: contraseña incorrecta, se queda en la página con el mensaje de error
+    // Con la contraseña mal se queda en la página con el mensaje de error
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI03_ContrasenaIncorrecta(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, "Mala1234!");
 
-        s.Login(DatosPrueba.EmailAdmin, "Mala1234!");
-
-        s.Espera.Until(_ => s.TextoPagina.Contains("Usuario o contraseña incorrectos."));
-        Assert.AreEqual("/Login/Index2", s.RutaActual);
+            sesion.EsperarTexto("Usuario o contraseña incorrectos.");
+            Assert.AreEqual("/Login/Index2", sesion.RutaActual);
+        }
     }
 
-    // UI-04: un email mal escrito lo para el propio navegador (input type="email")
+    // Un email mal escrito lo para el propio navegador porque el campo es de tipo email
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI04_EmailMalEscrito_NoAvanza(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Ir("/Login");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Ir("/Login");
 
-        s.Escribir("txtUsuario", "hola");
-        s.Elemento("btnSiguiente").Click();
+            sesion.Escribir("txtUsuario", "hola");
+            sesion.Elemento("btnSiguiente").Click();
 
-        bool valido = (bool)((IJavaScriptExecutor)s.Driver)
-            .ExecuteScript("return arguments[0].validity.valid;", s.Elemento("txtUsuario"))!;
-        Assert.IsFalse(valido);
-        Assert.AreEqual("/Login", s.RutaActual);
+            // Le preguntamos al navegador si el campo es válido
+            IJavaScriptExecutor javascript = (IJavaScriptExecutor)sesion.Driver;
+            object? respuesta = javascript.ExecuteScript("return arguments[0].validity.valid;", sesion.Elemento("txtUsuario"));
+            bool valido = (bool)respuesta!;
+
+            Assert.IsFalse(valido);
+            Assert.AreEqual("/Login", sesion.RutaActual);
+        }
     }
 
-    // UI-05: el botón Atrás de la contraseña vuelve a pedir el email
+    // El botón Atrás de la contraseña vuelve a pedir el email
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI05_BotonAtras(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Ir("/Login");
-        s.Escribir("txtUsuario", DatosPrueba.EmailAdmin);
-        s.Elemento("btnSiguiente").Click();
-        s.EsperarPagina("/Login/Index2");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            // Llegamos a la página de la contraseña
+            sesion.Ir("/Login");
+            sesion.Escribir("txtUsuario", DatosPrueba.EmailAdmin);
+            sesion.Elemento("btnSiguiente").Click();
+            sesion.EsperarPagina("/Login/Index2");
 
-        s.Elemento("btnAtras").Click();
+            // Pulsamos Atrás
+            sesion.Elemento("btnAtras").Click();
 
-        s.EsperarPagina("/Login");
+            sesion.EsperarPagina("/Login");
+        }
     }
 
-    // UI-06: tres fallos bloquean la cuenta y luego ni con la buena entra
+    // Tres fallos bloquean la cuenta y luego ni con la clave buena entra
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI06_TresFallos_Bloquea(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-
-        for (int i = 0; i < 3; i++)
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
         {
-            s.Login(DatosPrueba.EmailTester, "Mala1234!");
-            s.Espera.Until(_ => s.TextoPagina.Contains("Usuario o contraseña incorrectos."));
-        }
-        s.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+            // Fallamos 3 veces
+            sesion.Login(DatosPrueba.EmailTester, "Mala1234!");
+            sesion.EsperarTexto("Usuario o contraseña incorrectos.");
+            sesion.Login(DatosPrueba.EmailTester, "Mala1234!");
+            sesion.EsperarTexto("Usuario o contraseña incorrectos.");
+            sesion.Login(DatosPrueba.EmailTester, "Mala1234!");
+            sesion.EsperarTexto("Usuario o contraseña incorrectos.");
 
-        s.Espera.Until(_ => s.TextoPagina.Contains("Usuario o contraseña incorrectos."));
-        Assert.AreEqual("/Login/Index2", s.RutaActual);
-        Assert.IsTrue(s.Datos.LeerUsuario(DatosPrueba.EmailTester)!.Bloqueado);
+            // Probamos con la clave buena
+            sesion.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+
+            sesion.EsperarTexto("Usuario o contraseña incorrectos.");
+            Assert.AreEqual("/Login/Index2", sesion.RutaActual);
+            Assert.IsTrue(sesion.Datos.LeerUsuario(DatosPrueba.EmailTester)!.Bloqueado);
+        }
     }
 
-    // UI-07: el tester entra al Log desde el menú y se le deniega con mensaje
+    // El tester entra al log desde el menú y le sale que no tiene permiso
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI07_Tester_LogDenegado(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
-        s.EsperarPagina("/Principal");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+            sesion.EsperarPagina("/Principal");
 
-        s.Menu("lnkLog");
+            sesion.Menu("lnkLog");
 
-        Assert.AreEqual("No tienes permiso para acceder a Log.", s.Elemento("mensajeError").Text);
-        Assert.AreEqual("/Principal", s.RutaActual);
+            Assert.AreEqual("No tienes permiso para acceder a Log.", sesion.Elemento("mensajeError").Text);
+            Assert.AreEqual("/Principal", sesion.RutaActual);
+        }
     }
 
-    // UI-08: el administrador sí ve el Log, con los eventos (incluido su propio login)
+    // El administrador sí ve el log, y en él sale su propio login
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI08_Admin_VeLog(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
 
-        s.Menu("lnkLog");
+            sesion.Menu("lnkLog");
 
-        Assert.Contains(DatosPrueba.EmailAdmin, s.Elemento("tablaLog").Text);
+            string tabla = sesion.Elemento("tablaLog").Text;
+            Assert.IsTrue(tabla.Contains(DatosPrueba.EmailAdmin));
+        }
     }
 
-    // UI-09: el tester solo ve sus proyectos y no tiene el formulario de alta
+    // El tester solo ve sus proyectos y no tiene el formulario de alta
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI09_Tester_VeSoloSusProyectos(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
-        s.EsperarPagina("/Principal");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+            sesion.EsperarPagina("/Principal");
 
-        s.Menu("lnkProyectos");
+            sesion.Menu("lnkProyectos");
 
-        Assert.IsTrue(s.Existe("avisoSoloAdministrador"));
-        Assert.IsFalse(s.Existe("btnCrearProyecto"));
-        Assert.IsTrue(s.Existe("btnSeleccionar-ACTFIS"));
-        Assert.DoesNotContain("ARCH", s.TextoPagina);
+            Assert.IsTrue(sesion.Existe("avisoSoloAdministrador"));
+            Assert.IsFalse(sesion.Existe("btnCrearProyecto"));
+            Assert.IsTrue(sesion.Existe("btnSeleccionar-ACTFIS"));
+            Assert.IsFalse(sesion.TextoPagina.Contains("ARCH"));
+        }
     }
 
-    // UI-10: el administrador crea un proyecto desde el formulario
+    // El administrador crea un proyecto desde el formulario
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI10_Admin_CreaProyecto(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
-        s.Menu("lnkProyectos");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
+            sesion.Menu("lnkProyectos");
 
-        s.Escribir("Nombre", "Proyecto Selenium");
-        s.Escribir("Siglas", "sel");
-        s.Escribir("Descripcion", "Creado desde el navegador");
-        s.Elemento("btnCrearProyecto").Click();
+            // Rellenamos el formulario y lo mandamos
+            sesion.Escribir("Nombre", "Proyecto Selenium");
+            sesion.Escribir("Siglas", "sel");
+            sesion.Escribir("Descripcion", "Creado desde el navegador");
+            sesion.Elemento("btnCrearProyecto").Click();
 
-        Assert.AreEqual("El proyecto se ha creado y seleccionado.", s.Elemento("mensajeCorrecto").Text);
-        Assert.Contains("Proyecto Selenium", s.TextoPagina);
-        Assert.IsTrue(s.Datos.Proyectos.Values.Any(p => p.Siglas == "SEL"));
+            Assert.AreEqual("El proyecto se ha creado y seleccionado.", sesion.Elemento("mensajeCorrecto").Text);
+            Assert.IsTrue(sesion.TextoPagina.Contains("Proyecto Selenium"));
+            // Las siglas se guardan en mayúsculas
+            Assert.IsTrue(ExisteProyecto(sesion, "SEL"));
+        }
     }
 
-    // UI-11: siglas repetidas, se muestra el error y no se crea
+    // Con siglas repetidas sale el error y no se crea
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI11_Admin_SiglasRepetidas(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
-        s.Menu("lnkProyectos");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
+            sesion.Menu("lnkProyectos");
 
-        s.Escribir("Nombre", "Otro nombre");
-        s.Escribir("Siglas", "actfis");
-        s.Elemento("btnCrearProyecto").Click();
+            sesion.Escribir("Nombre", "Otro nombre");
+            sesion.Escribir("Siglas", "actfis");
+            sesion.Elemento("btnCrearProyecto").Click();
 
-        s.Espera.Until(_ => s.TextoPagina.Contains("Ya existe un proyecto con esas siglas."));
-        Assert.HasCount(DatosPrueba.NumProyectos, s.Datos.Proyectos);
+            sesion.EsperarTexto("Ya existe un proyecto con esas siglas.");
+            Assert.AreEqual(DatosPrueba.NumProyectos, sesion.Datos.Proyectos.Count);
+        }
     }
 
-    // UI-12: el tester selecciona uno de sus proyectos
+    // El tester selecciona uno de sus proyectos
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI12_Tester_SeleccionaProyecto(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
-        s.EsperarPagina("/Principal");
-        s.Menu("lnkProyectos");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailTester, DatosPrueba.ClaveTester);
+            sesion.EsperarPagina("/Principal");
+            sesion.Menu("lnkProyectos");
 
-        s.Elemento("btnSeleccionar-ACTFIS").Click();
+            sesion.Elemento("btnSeleccionar-ACTFIS").Click();
 
-        Assert.Contains("se ha seleccionado", s.Elemento("mensajeCorrecto").Text);
-        Assert.IsFalse(s.Existe("btnSeleccionar-ACTFIS"));
+            Assert.IsTrue(sesion.Elemento("mensajeCorrecto").Text.Contains("se ha seleccionado"));
+            // Ya está seleccionado, así que no sale su botón
+            Assert.IsFalse(sesion.Existe("btnSeleccionar-ACTFIS"));
+        }
     }
 
-    // UI-13: cambiar el teléfono en el perfil y que se mantenga al volver a entrar
+    // Cambiamos el teléfono en el perfil y se mantiene al volver a entrar
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI13_Perfil_CambiaTelefono(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
-        s.Menu("lnkPerfil");
-        Assert.AreEqual(DatosPrueba.TelefonoAdmin, s.Elemento("Telefono").GetDomProperty("value"));
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            // 1. Entramos al perfil y sale su teléfono
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
+            sesion.Menu("lnkPerfil");
+            Assert.AreEqual(DatosPrueba.TelefonoAdmin, sesion.Elemento("Telefono").GetDomProperty("value"));
 
-        s.Escribir("Telefono", "611222333");
-        s.Elemento("btnGuardarPerfil").Click();
-        s.Elemento("mensajePerfil");
-        s.Ir("/Usuarios/Perfil");
+            // 2. Lo cambiamos y guardamos
+            sesion.Escribir("Telefono", "611222333");
+            sesion.Elemento("btnGuardarPerfil").Click();
+            sesion.Elemento("mensajePerfil");
 
-        Assert.AreEqual("611222333", s.Elemento("Telefono").GetDomProperty("value"));
+            // 3. Volvemos a entrar y sale el nuevo
+            sesion.Ir("/Usuarios/Perfil");
+            Assert.AreEqual("611222333", sesion.Elemento("Telefono").GetDomProperty("value"));
+        }
     }
 
-    // UI-14: un teléfono mal escrito muestra el error y no se guarda
+    // Un teléfono mal escrito muestra el error y no se guarda
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI14_Perfil_TelefonoNoValido(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
-        s.Menu("lnkPerfil");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
+            sesion.Menu("lnkPerfil");
 
-        s.Escribir("Telefono", "12ab");
-        s.Elemento("btnGuardarPerfil").Click();
+            sesion.Escribir("Telefono", "12ab");
+            sesion.Elemento("btnGuardarPerfil").Click();
+            sesion.EsperarTexto("El teléfono debe tener 9 cifras.");
 
-        s.Espera.Until(_ => s.TextoPagina.Contains("El teléfono debe tener 9 cifras."));
-        s.Ir("/Usuarios/Perfil");
-        Assert.AreEqual(DatosPrueba.TelefonoAdmin, s.Elemento("Telefono").GetDomProperty("value"));
+            // Volvemos a entrar y sigue el de antes
+            sesion.Ir("/Usuarios/Perfil");
+            Assert.AreEqual(DatosPrueba.TelefonoAdmin, sesion.Elemento("Telefono").GetDomProperty("value"));
+        }
     }
 
-    // UI-15: cerrar sesión desde el menú y que ya no se pueda volver a la principal
+    // Cerramos sesión desde el menú y ya no se puede volver a la principal
     [TestMethod]
-    [DynamicData(nameof(Navegadores))]
+    [DataRow("chrome")]
+    [DataRow("edge")]
+    [DataRow("firefox")]
     public void UI15_CerrarSesion(string navegador)
     {
-        using SesionNavegador s = new SesionNavegador(navegador);
-        s.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
-        s.EsperarPagina("/Principal");
+        using (SesionNavegador sesion = new SesionNavegador(navegador))
+        {
+            sesion.Login(DatosPrueba.EmailAdmin, DatosPrueba.ClaveAdmin);
+            sesion.EsperarPagina("/Principal");
 
-        s.Menu("btnCerrarSesion");
-        s.EsperarPagina("/Login");
-        s.Ir("/Principal");
+            sesion.Menu("btnCerrarSesion");
+            sesion.EsperarPagina("/Login");
 
-        s.EsperarPagina("/Login");
+            // Intentamos volver a la principal
+            sesion.Ir("/Principal");
+
+            sesion.EsperarPagina("/Login");
+        }
     }
 }

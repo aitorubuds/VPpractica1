@@ -18,10 +18,10 @@ public class Usuario
     public bool Activo { get; set; } = true;
     public bool Activa { get => Activo; set => Activo = value; }
 
-    // usuario con privilegios de administración (acta del cliente)
+    // Indica si el usuario es administrador
     public bool EsAdministrador { get; set; } = false;
 
-    // dato sensible: se guarda cifrado con AES-GCM, nunca en claro
+    // El teléfono es un dato sensible, por eso se guarda cifrado y nunca en claro
     public string TelefonoCifrado { get; set; } = string.Empty;
 
     // bloqueo por intentos fallidos
@@ -45,20 +45,31 @@ public class Usuario
         Sal = datos.Sal;
     }
 
-    // guarda el teléfono cifrado; vacío lo borra
+    // Guardar el teléfono cifrado con la clave
     public void EstablecerTelefono(string telefono, string clave)
     {
-        TelefonoCifrado = string.IsNullOrWhiteSpace(telefono)
-            ? string.Empty
-            : ServicioCifrado.Cifrar(telefono.Trim(), clave);
+        // Si viene vacío, borramos el teléfono que hubiera
+        if (string.IsNullOrWhiteSpace(telefono))
+        {
+            TelefonoCifrado = string.Empty;
+        }
+        else
+        {
+            // Quitamos los espacios de los lados y lo ciframos
+            TelefonoCifrado = ServicioCifrado.Cifrar(telefono.Trim(), clave);
+        }
     }
 
-    // devuelve el teléfono en claro o vacío si no tiene
+    // Devolver el teléfono descifrado
     public string ObtenerTelefono(string clave)
     {
-        return string.IsNullOrEmpty(TelefonoCifrado)
-            ? string.Empty
-            : ServicioCifrado.Descifrar(TelefonoCifrado, clave);
+        // Si no tiene teléfono devolvemos vacío
+        if (string.IsNullOrEmpty(TelefonoCifrado))
+        {
+            return string.Empty;
+        }
+
+        return ServicioCifrado.Descifrar(TelefonoCifrado, clave);
     }
 
     // Compruebar si contraseña introducida es correcta
@@ -133,11 +144,26 @@ public class Usuario
     }
 
     // Alias para que funcione con la web del profesor
-    public bool CompruebaPassword(string contrasena) => ComprobarContrasena(contrasena);
-    public bool CambiaPassword(string contrasenaActual, string nuevaContrasena) => CambiarContrasena(contrasenaActual, nuevaContrasena);
+    public bool CompruebaPassword(string contrasena)
+    {
+        return ComprobarContrasena(contrasena);
+    }
 
+    // Lo mismo para cambiar la contraseña
+    public bool CambiaPassword(string contrasenaActual, string nuevaContrasena)
+    {
+        return CambiarContrasena(contrasenaActual, nuevaContrasena);
+    }
+
+    // Devolver el nombre completo del usuario
     public override string ToString()
     {
-        return string.IsNullOrWhiteSpace(Apellidos) ? Nombre : $"{Nombre} {Apellidos}".Trim();
+        // Si no tiene apellidos, solo el nombre
+        if (string.IsNullOrWhiteSpace(Apellidos))
+        {
+            return Nombre;
+        }
+
+        return $"{Nombre} {Apellidos}".Trim();
     }
 }

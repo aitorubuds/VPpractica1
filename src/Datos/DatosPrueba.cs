@@ -5,11 +5,10 @@ using System.Collections.Generic;
 
 namespace Datos;
 
-// Crea la base de datos en un estado conocido con datos conocidos (PR1 p.1).
-// La usan la web al arrancar y las pruebas, así siempre se parte de lo mismo.
+// Crea la base de datos en un estado conocido con datos conocidos
 public static class DatosPrueba
 {
-    // Contraseñas de los usuarios de prueba (todas cumplen ServicioContrasenas)
+    // Contraseñas de los usuarios de prueba
     public const string EmailAdmin = "admin@ubu.es";
     public const string ClaveAdmin = "Password123!";
     public const string EmailTester = "tester@ubu.es";
