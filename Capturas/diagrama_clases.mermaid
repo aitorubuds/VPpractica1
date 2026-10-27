@@ -1,0 +1,75 @@
+classDiagram
+    direction TB
+
+    class Usuario {
+        +string Nombre
+        +string HashContrasena
+        +byte[] Salt
+        +Rol Rol
+        +int IntentosFallidos
+        +bool Bloqueado
+        +ComprobarContrasena(pass, servicioHash) bool
+        +RegistrarIntentoFallido() void
+        +ReiniciarIntentos() void
+    }
+
+    class Rol {
+        <<enumeration>>
+        Administrador
+        Gestor
+        Desarrollador
+        Tester
+    }
+
+    class Proyecto {
+        +int Id
+        +string Nombre
+        +string Descripcion
+    }
+
+    class IDatos {
+        <<interface>>
+        +LeerUsuario(nombre) Usuario
+        +GuardarUsuario(usuario) bool
+        +LeerProyectos() List~Proyecto~
+    }
+
+    class Datos {
+        -Dictionary usuarios
+        +LeerUsuario(nombre) Usuario
+        +GuardarUsuario(usuario) bool
+    }
+
+    class ServicioHash {
+        +CalcularHash(pass, salt) string
+        +Verificar(pass, salt, hash) bool
+    }
+
+    class UsuarioTests {
+        <<TestClass>>
+        +ComprobarContrasena_PassCorrecta_RetornaTrue()
+        +RegistrarIntento_3Fallos_BloqueaUsuario()
+        +ReiniciarIntentos_RestableceContador()
+    }
+
+    class ServicioHashTests {
+        <<TestClass>>
+        +CalcularHash_MismoSalt_GeneraMismoHash()
+        +Verificar_ContrasenaValida_RetornaTrue()
+    }
+
+    class DatosTests {
+        <<TestClass>>
+        +LeerUsuario_Existente_RetornaUsuario()
+        +GuardarUsuario_Nuevo_RetornaTrue()
+    }
+
+    IDatos <|.. Datos : implements
+    Datos o-- Usuario : gestiona
+    Datos o-- Proyecto : gestiona
+    Usuario --> Rol : tiene
+    Usuario ..> ServicioHash : usa
+
+    UsuarioTests ..> Usuario : <<test>>
+    ServicioHashTests ..> ServicioHash : <<test>>
+    DatosTests ..> Datos : <<test>>

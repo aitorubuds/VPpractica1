@@ -1,0 +1,32 @@
+sequenceDiagram
+    autonumber
+    actor U as Usuario (Navegador)
+    participant W as Web (Index.cshtml)
+    participant D as Capa Datos (IDatos)
+    participant M as Modelo (Usuario)
+    participant S as ServicioHash (PBKDF2)
+
+    U->>W: POST /Login (usuario, clave)
+    W->>D: LeerUsuario(usuario)
+    D-->>W: objeto Usuario (u)
+    
+    alt Usuario no existe o bloqueado
+        W-->>U: Mostrar error "Credenciales no válidas / Bloqueado"
+    else Usuario activo
+        W->>M: ComprobarContrasena(clave, servicioHash)
+        M->>S: Verificar(clave, Salt, Hash)
+        S-->>M: resultado (true / false)
+        
+        alt Contraseña correcta
+            M->>M: ReiniciarIntentos()
+            W->>D: GuardarUsuario(u)
+            W-->>U: Redirección a /Proyectos (HTTP 302)
+        else Contraseña incorrecta
+            M->>M: RegistrarIntentoFallido()
+            opt Si intentos >= 3
+                M->>M: Bloqueado = true
+            end
+            W->>D: GuardarUsuario(u)
+            W-->>U: Mostrar error "Credenciales erróneas (Intento N/3)"
+        end
+    end

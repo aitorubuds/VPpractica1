@@ -1,0 +1,14 @@
+graph TD
+    subgraph Solucion [Solución UBU_TPMP]
+        Web["Web (ASP.NET Core Razor Pages)"]
+        Nucleo["Nucleo (Lógica de Dominio y Seguridad)"]
+        Datos["Datos (Persistencia IDatos)"]
+        Tests["Tests (Nucleo.Tests y Web.Tests)"]
+    end
+
+    Web -->|Usa modelos y servicios| Nucleo
+    Web -->|Inyecta IDatos| Datos
+    Datos -->|Persiste entidades| Nucleo
+    Tests -.->|Pruebas unitarias| Nucleo
+    Tests -.->|Pruebas de repositorio| Datos
+    Tests -.->|Pruebas de integración| Web
